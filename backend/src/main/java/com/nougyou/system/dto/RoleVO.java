@@ -1,4 +1,4 @@
 package com.nougyou.system.dto;
 
-public record RoleVO(String id, String name, String code, Integer sort) {
+public record RoleVO(Long id, String name, String code, Integer sort) {
 }

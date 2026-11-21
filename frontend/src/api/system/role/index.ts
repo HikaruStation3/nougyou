@@ -1,49 +1,33 @@
 import request from "@/utils/request";
-import type { RoleQueryParams, RoleItem, RoleForm } from "./types";
-import type { OptionItem, PageResult } from "@/api/common";
+import type { RoleItem, PermissionItem } from "./types";
+import type { OptionItem } from "@/api/common";
 
 const ROLE_BASE_URL = "/api/v1/roles";
 
 const RoleAPI = {
-  /** 获取角色分页数据 */
-  getPage(queryParams?: RoleQueryParams) {
-    return request<any, PageResult<RoleItem>>({
-      url: `${ROLE_BASE_URL}`,
-      method: "get",
-      params: queryParams,
-    });
+  /** 获取角色列表 */
+  getList() {
+    return request<any, RoleItem[]>({ url: `${ROLE_BASE_URL}`, method: "get" });
   },
   /** 获取角色下拉数据源 */
   getOptions() {
     return request<any, OptionItem[]>({ url: `${ROLE_BASE_URL}/options`, method: "get" });
   },
-  /** 获取角色的菜单ID集合 */
-  getRoleMenuIds(roleId: string) {
-    return request<any, string[]>({ url: `${ROLE_BASE_URL}/${roleId}/menu-ids`, method: "get" });
+  /** 获取全部权限点 */
+  getPermissions() {
+    return request<any, PermissionItem[]>({ url: `${ROLE_BASE_URL}/permissions`, method: "get" });
   },
-  /** 分配菜单权限 */
-  updateRoleMenus(roleId: string, data: number[]) {
-    return request({ url: `${ROLE_BASE_URL}/${roleId}/menus`, method: "put", data });
+  /** 获取角色已配置的权限点ID */
+  getRolePermissionIds(roleId: number) {
+    return request<any, number[]>({ url: `${ROLE_BASE_URL}/${roleId}/permissions`, method: "get" });
   },
-  /** 获取角色表单数据 */
-  getFormData(id: string) {
-    return request<any, RoleForm>({ url: `${ROLE_BASE_URL}/${id}/form`, method: "get" });
-  },
-  /** 获取角色的部门ID集合(自定义数据权限) */
-  getRoleDeptIds(roleId: string) {
-    return request<any, number[]>({ url: `${ROLE_BASE_URL}/${roleId}/dept-ids`, method: "get" });
-  },
-  /** 新增角色 */
-  create(data: RoleForm) {
-    return request({ url: `${ROLE_BASE_URL}`, method: "post", data });
-  },
-  /** 更新角色 */
-  update(id: string, data: RoleForm) {
-    return request({ url: `${ROLE_BASE_URL}/${id}`, method: "put", data });
-  },
-  /** 批量删除角色，多个以英文逗号(,)分割 */
-  deleteByIds(ids: string) {
-    return request({ url: `${ROLE_BASE_URL}/${ids}`, method: "delete" });
+  /** 保存角色权限配置 */
+  updateRolePermissions(roleId: number, permissionIds: number[]) {
+    return request({
+      url: `${ROLE_BASE_URL}/${roleId}/permissions`,
+      method: "put",
+      data: { permissionIds },
+    });
   },
 };
 

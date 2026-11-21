@@ -31,11 +31,19 @@ public class MenuController {
                 permissionService.findPermissionCodes(SecurityUtils.currentUser().userId()));
 
         List<Map<String, Object>> routes = new ArrayList<>();
+        List<Map<String, Object>> systemMenus = new ArrayList<>();
         if (perms.contains("sys:user:menu")) {
-            Map<String, Object> userMenu = route("user", "system/user/index", "User",
-                    "用户管理", "el-icon-User", null, null);
+            systemMenus.add(route("user", "system/user/index", "User",
+                    "用户管理", "el-icon-User", null, null));
+        }
+        if (perms.contains("sys:role:menu")) {
+            systemMenus.add(route("role", "system/role/index", "Role",
+                    "角色权限", "el-icon-Lock", null, null));
+        }
+        if (!systemMenus.isEmpty()) {
+            String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",
-                    "/system/user", List.of(userMenu)));
+                    "/system/" + redirect, systemMenus));
         }
         if (perms.contains("ai:chat:menu")) {
             Map<String, Object> aiMenu = route("chat", "ai/chat/index", "AiChat",

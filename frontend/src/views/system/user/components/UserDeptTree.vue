@@ -1,6 +1,6 @@
 <template>
   <el-card shadow="never">
-    <el-input v-model="deptName" placeholder="部门名称" clearable>
+    <el-input v-model="deptName" placeholder="商户名称" clearable>
       <template #prefix>
         <el-icon><Search /></el-icon>
       </template>
@@ -29,7 +29,7 @@ const props = defineProps({
   },
 });
 
-// 部门树数据
+// 商户树数据
 const deptList = ref<OptionItem[]>();
 const deptTreeRef = ref();
 const deptName = ref();
@@ -48,7 +48,7 @@ watchEffect(
 );
 
 /**
- * 部门筛选
+ * 商户筛选
  */
 function handleFilter(value: string, data: any): boolean {
   if (!value) {
@@ -58,7 +58,7 @@ function handleFilter(value: string, data: any): boolean {
 }
 
 /**
- * 部门树节点点击事件
+ * 商户树节点点击事件
  */
 function handleNodeClick(data: { [key: string]: any }): void {
   deptId.value = data.value;

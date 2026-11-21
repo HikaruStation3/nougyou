@@ -26,7 +26,7 @@ public class RoleService {
         return roleMapper.selectList(Wrappers.<SysRole>lambdaQuery()
                         .orderByAsc(SysRole::getSort)
                         .orderByAsc(SysRole::getId)).stream()
-                .map(role -> new RoleVO(String.valueOf(role.getId()), role.getName(), role.getCode(), role.getSort()))
+                .map(role -> new RoleVO(role.getId(), role.getName(), role.getCode(), role.getSort()))
                 .toList();
     }
 

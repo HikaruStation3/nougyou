@@ -98,7 +98,7 @@
                 <DictTag v-model="scope.row.gender" code="gender" />
               </template>
             </el-table-column>
-            <el-table-column label="部门" width="120" align="center" prop="deptName" />
+            <el-table-column label="商户" width="120" align="center" prop="deptName" />
             <el-table-column label="角色" align="center" prop="roleNames" min-width="160" />
             <el-table-column label="手机号码" align="center" prop="mobile" width="120" />
             <el-table-column label="邮箱" align="center" prop="email" width="160" />
@@ -177,10 +177,10 @@
           <el-input v-model="formData.nickname" placeholder="请输入用户昵称" />
         </el-form-item>
 
-        <el-form-item label="所属部门" prop="deptId">
+        <el-form-item label="所属商户" prop="deptId">
           <el-tree-select
             v-model="formData.deptId"
-            placeholder="请选择所属部门"
+            placeholder="请选择所属商户"
             :data="deptOptions"
             filterable
             check-strictly
@@ -193,7 +193,7 @@
         </el-form-item>
 
         <el-form-item label="角色" prop="roleIds">
-          <el-select v-model="formData.roleIds" multiple placeholder="请选择">
+          <el-select v-model="selectedRoleId" placeholder="请选择角色">
             <el-option
               v-for="item in roleOptions"
               :key="item.value"
@@ -294,12 +294,20 @@ const formData = reactive<UserForm>({ ...initialFormData });
 const deptOptions = ref<OptionItem[]>();
 const roleOptions = ref<OptionItem[]>();
 
+// 当前模型为单角色，下拉值包装成数组以兼容后端 roleIds
+const selectedRoleId = computed<number | undefined>({
+  get: () => formData.roleIds?.[0],
+  set: (value) => {
+    formData.roleIds = value ? [value] : [];
+  },
+});
+
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
 
 const rules: FormRules = {
   username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   nickname: [{ required: true, message: "请输入用户昵称", trigger: "blur" }],
-  deptId: [{ required: true, message: "请选择所属部门", trigger: "change" }],
+  deptId: [{ required: true, message: "请选择所属商户", trigger: "change" }],
   roleIds: [{ required: true, message: "请选择用户角色", trigger: "change" }],
   email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: "blur" }],
   mobile: [{ pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号码", trigger: "blur" }],

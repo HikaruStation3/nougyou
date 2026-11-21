@@ -17,9 +17,11 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +46,7 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("重置密码", "sys:user:reset-password", "BUTTON", 6),
             new PermissionSeed("角色查询", "sys:role:query", "BUTTON", 7),
             new PermissionSeed("角色授权", "sys:role:update", "BUTTON", 8),
+            new PermissionSeed("角色管理", "sys:role:menu", "MENU", 19),
             new PermissionSeed("AI 对话", "ai:chat:menu", "MENU", 9),
             new PermissionSeed("AI 对话调用", "ai:chat:use", "BUTTON", 10),
             new PermissionSeed("文件上传", "file:upload:menu", "MENU", 11),
@@ -78,14 +81,10 @@ public class DataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        SysDept dept = deptMapper.selectOne(Wrappers.<SysDept>lambdaQuery().eq(SysDept::getName, "总公司"));
-        if (dept == null) {
-            dept = new SysDept();
-            dept.setParentId(0L);
-            dept.setName("总公司");
-            dept.setSort(1);
-            deptMapper.insert(dept);
-        }
+        SysDept root = ensureMerchantRoot();
+        SysDept farm = ensureMerchant("绿野农场", root.getId(), 1);
+        ensureMerchant("鲜果合作社", root.getId(), 2);
+        ensureMerchant("云岭茶庄", root.getId(), 3);
 
         SysRole adminRole = ensureRole(ROLE_ADMIN, "管理员", 1);
         SysRole farmerRole = ensureRole(ROLE_FARMER, "农户商家", 2);
@@ -93,9 +92,12 @@ public class DataInitializer implements ApplicationRunner {
 
         seedPermissions();
 
-        assignIfEmpty(adminRole, ALL_PERMISSION_CODES);
+        // 管理员始终拥有全部权限点，后续新增权限时会自动补齐
+        ensurePermissions(adminRole, ALL_PERMISSION_CODES);
         assignIfEmpty(farmerRole, FARMER_PERMISSION_CODES);
         assignIfEmpty(buyerRole, BUYER_PERMISSION_CODES);
+
+        ensureUser("farmer01", "绿野农场店主", farmerRole.getId(), farm.getId());
 
         SysUser admin = userMapper.selectOne(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, "admin"));
         if (admin == null) {
@@ -105,11 +107,61 @@ public class DataInitializer implements ApplicationRunner {
             admin.setNickname("管理员");
             admin.setGender(0);
             admin.setStatus(1);
-            admin.setDeptId(dept.getId());
+            admin.setDeptId(root.getId());
             admin.setRoleId(adminRole.getId());
             userMapper.insert(admin);
             log.info("已初始化默认账号：admin / 123456");
         }
+    }
+
+    /**
+     * 商户树根节点，历史数据中的「总公司」会重命名为「商户中心」。
+     */
+    private SysDept ensureMerchantRoot() {
+        SysDept root = deptMapper.selectOne(Wrappers.<SysDept>lambdaQuery()
+                .and(w -> w.eq(SysDept::getName, "商户中心").or().eq(SysDept::getName, "总公司"))
+                .orderByAsc(SysDept::getId)
+                .last("limit 1"));
+        if (root == null) {
+            root = createDept("商户中心", 0L, 0);
+            log.info("已初始化商户根节点：商户中心");
+        } else if (!"商户中心".equals(root.getName())) {
+            root.setName("商户中心");
+            deptMapper.updateById(root);
+        }
+        return root;
+    }
+
+    private SysDept ensureMerchant(String name, Long parentId, int sort) {
+        SysDept dept = deptMapper.selectOne(Wrappers.<SysDept>lambdaQuery()
+                .eq(SysDept::getName, name)
+                .eq(SysDept::getParentId, parentId));
+        return dept != null ? dept : createDept(name, parentId, sort);
+    }
+
+    private SysDept createDept(String name, Long parentId, int sort) {
+        SysDept dept = new SysDept();
+        dept.setParentId(parentId);
+        dept.setName(name);
+        dept.setSort(sort);
+        deptMapper.insert(dept);
+        return dept;
+    }
+
+    private void ensureUser(String username, String nickname, Long roleId, Long deptId) {
+        if (userMapper.exists(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, username))) {
+            return;
+        }
+        SysUser user = new SysUser();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setNickname(nickname);
+        user.setGender(0);
+        user.setStatus(1);
+        user.setDeptId(deptId);
+        user.setRoleId(roleId);
+        userMapper.insert(user);
+        log.info("已初始化商户测试账号：{} / 123456", username);
     }
 
     private SysRole ensureRole(String code, String name, int sort) {
@@ -172,11 +224,17 @@ public class DataInitializer implements ApplicationRunner {
         if (!rolePermissionMapper.selectPermissionIdsByRoleId(role.getId()).isEmpty()) {
             return;
         }
+        ensurePermissions(role, permissionCodes);
+    }
+
+    private void ensurePermissions(SysRole role, List<String> permissionCodes) {
+        Set<Long> existingIds = new HashSet<>(rolePermissionMapper.selectPermissionIdsByRoleId(role.getId()));
         Map<String, Long> permissionIds = permissionMapper.selectList(null).stream()
                 .collect(Collectors.toMap(SysPermission::getCode, SysPermission::getId, (a, b) -> a));
         permissionCodes.stream()
                 .map(permissionIds::get)
                 .filter(Objects::nonNull)
+                .filter(permissionId -> !existingIds.contains(permissionId))
                 .forEach(permissionId -> rolePermissionMapper.insertOne(role.getId(), permissionId));
     }
 

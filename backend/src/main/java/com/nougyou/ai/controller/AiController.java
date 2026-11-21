@@ -8,6 +8,7 @@ import com.nougyou.common.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class AiController {
     private final ChatClient.Builder chatClientBuilder;
 
     @PostMapping("/chat")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     public ApiResponse<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
         try {
             String content = chatClientBuilder.build()

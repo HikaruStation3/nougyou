@@ -37,6 +37,7 @@ public class SysUserService {
     private final SysUserMapper userMapper;
     private final SysRoleMapper roleMapper;
     private final SysDeptMapper deptMapper;
+    private final PermissionService permissionService;
     private final PasswordEncoder passwordEncoder;
 
     public PageResult<UserItemVO> page(UserQuery query) {
@@ -146,9 +147,8 @@ public class SysUserService {
 
     public UserInfoVO currentUserInfo(Long userId) {
         SysUser user = requireUser(userId);
-        List<String> roles = roleCodes(user);
         return new UserInfoVO(String.valueOf(user.getId()), user.getUsername(), user.getNickname(),
-                user.getAvatar(), roles, List.of("*:*:*"));
+                user.getAvatar(), roleCodes(user), permissionService.findPermissionCodes(userId));
     }
 
     public UserProfileVO getProfile(Long userId) {

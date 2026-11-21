@@ -11,6 +11,7 @@ import com.nougyou.system.dto.UserProfileVO;
 import com.nougyou.system.dto.UserQuery;
 import com.nougyou.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class UserController {
     private final SysUserService userService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('sys:user:query')")
     public ApiResponse<PageResult<UserItemVO>> page(UserQuery query) {
         return ApiResponse.ok(userService.page(query));
     }
@@ -42,29 +44,34 @@ public class UserController {
     }
 
     @GetMapping("/{id}/form")
+    @PreAuthorize("hasAuthority('sys:user:query')")
     public ApiResponse<UserFormVO> form(@PathVariable Long id) {
         return ApiResponse.ok(userService.getForm(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('sys:user:create')")
     public ApiResponse<Void> create(@RequestBody UserForm form) {
         userService.create(form);
         return ApiResponse.ok();
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('sys:user:update')")
     public ApiResponse<Void> update(@PathVariable Long id, @RequestBody UserForm form) {
         userService.update(id, form);
         return ApiResponse.ok();
     }
 
     @PutMapping("/{id}/password/reset")
+    @PreAuthorize("hasAuthority('sys:user:reset-password')")
     public ApiResponse<Void> resetPassword(@PathVariable Long id, @RequestParam String password) {
         userService.resetPassword(id, password);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{ids}")
+    @PreAuthorize("hasAuthority('sys:user:delete')")
     public ApiResponse<Void> delete(@PathVariable String ids) {
         userService.deleteByIds(ids);
         return ApiResponse.ok();

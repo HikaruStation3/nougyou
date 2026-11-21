@@ -11,12 +11,14 @@ import com.nougyou.system.entity.SysRole;
 import com.nougyou.system.entity.SysUser;
 import com.nougyou.system.mapper.SysRoleMapper;
 import com.nougyou.system.mapper.SysUserMapper;
+import com.nougyou.system.service.PermissionService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final CaptchaService captchaService;
+    private final PermissionService permissionService;
 
     public LoginResponse login(LoginRequest request) {
         captchaService.validate(request.captchaId(), request.captchaCode());
@@ -57,9 +60,9 @@ public class AuthService {
         user.setGender(0);
         user.setStatus(1);
 
-        SysRole userRole = roleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, "USER"));
-        if (userRole != null) {
-            user.setRoleId(userRole.getId());
+        SysRole buyerRole = roleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, "BUYER"));
+        if (buyerRole != null) {
+            user.setRoleId(buyerRole.getId());
         }
         userMapper.insert(user);
     }
@@ -95,7 +98,9 @@ public class AuthService {
     }
 
     private LoginResponse buildTokens(SysUser user) {
-        List<String> authorities = roleCodes(user).stream().map(code -> "ROLE_" + code).toList();
+        List<String> authorities = new ArrayList<>();
+        roleCodes(user).forEach(code -> authorities.add("ROLE_" + code));
+        authorities.addAll(permissionService.findPermissionCodes(user.getId()));
         String accessToken = tokenProvider.createAccessToken(user.getId(), user.getUsername(), authorities);
         String refreshToken = tokenProvider.createRefreshToken(user.getId(), user.getUsername());
         return new LoginResponse(accessToken, refreshToken, "Bearer", tokenProvider.getAccessTokenExpireSeconds());

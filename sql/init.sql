@@ -38,3 +38,21 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '用户表';
+
+CREATE TABLE IF NOT EXISTS `sys_permission` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `parent_id`   BIGINT       NOT NULL DEFAULT 0 COMMENT '父级权限ID，0为根',
+    `name`        VARCHAR(64)  NOT NULL COMMENT '权限名称',
+    `code`        VARCHAR(100) NOT NULL COMMENT '权限标识，如 sys:user:query',
+    `type`        VARCHAR(16)  NOT NULL DEFAULT 'BUTTON' COMMENT '类型：MENU 菜单 / BUTTON 操作',
+    `sort`        INT          NOT NULL DEFAULT 0 COMMENT '排序',
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_permission_code` (`code`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '权限点表';
+
+CREATE TABLE IF NOT EXISTS `sys_role_permission` (
+    `role_id`       BIGINT NOT NULL COMMENT '角色ID',
+    `permission_id` BIGINT NOT NULL COMMENT '权限ID',
+    PRIMARY KEY (`role_id`, `permission_id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '角色权限关联表';

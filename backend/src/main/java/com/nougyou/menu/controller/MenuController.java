@@ -1,38 +1,55 @@
 package com.nougyou.menu.controller;
 
 import com.nougyou.common.api.ApiResponse;
+import com.nougyou.security.SecurityUtils;
+import com.nougyou.system.service.PermissionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * 演示用的静态菜单。实际项目可改为从数据库读取并按角色过滤。
+ * 演示用的静态菜单，按当前用户的权限点过滤。实际项目可改为从数据库读取。
  */
 @RestController
 @RequestMapping("/api/v1/menus")
+@RequiredArgsConstructor
 public class MenuController {
+
+    private final PermissionService permissionService;
 
     @GetMapping("/routes")
     public ApiResponse<List<Map<String, Object>>> routes() {
-        Map<String, Object> userMenu = route("user", "system/user/index", "User",
-                "用户管理", "el-icon-User", null, null);
-        Map<String, Object> aiMenu = route("chat", "ai/chat/index", "AiChat",
-                "AI 对话", "el-icon-ChatDotRound", null, null);
-        Map<String, Object> fileMenu = route("file", "demo/file/index", "FileDemo",
-                "文件上传", "el-icon-Upload", null, null);
+        Set<String> perms = new HashSet<>(
+                permissionService.findPermissionCodes(SecurityUtils.currentUser().userId()));
 
-        return ApiResponse.ok(List.of(
-                route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",
-                        "/system/user", List.of(userMenu)),
-                route("/ai", "Layout", "/ai", "AI 助手", "el-icon-ChatDotRound",
-                        "/ai/chat", List.of(aiMenu)),
-                route("/tools", "Layout", "/tools", "工具箱", "el-icon-FolderOpened",
-                        "/tools/file", List.of(fileMenu))
-        ));
+        List<Map<String, Object>> routes = new ArrayList<>();
+        if (perms.contains("sys:user:menu")) {
+            Map<String, Object> userMenu = route("user", "system/user/index", "User",
+                    "用户管理", "el-icon-User", null, null);
+            routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",
+                    "/system/user", List.of(userMenu)));
+        }
+        if (perms.contains("ai:chat:menu")) {
+            Map<String, Object> aiMenu = route("chat", "ai/chat/index", "AiChat",
+                    "AI 对话", "el-icon-ChatDotRound", null, null);
+            routes.add(route("/ai", "Layout", "/ai", "AI 助手", "el-icon-ChatDotRound",
+                    "/ai/chat", List.of(aiMenu)));
+        }
+        if (perms.contains("file:upload:menu")) {
+            Map<String, Object> fileMenu = route("file", "demo/file/index", "FileDemo",
+                    "文件上传", "el-icon-Upload", null, null);
+            routes.add(route("/tools", "Layout", "/tools", "工具箱", "el-icon-FolderOpened",
+                    "/tools/file", List.of(fileMenu)));
+        }
+        return ApiResponse.ok(routes);
     }
 
     private Map<String, Object> route(String path, String component, String name, String title,

@@ -76,7 +76,7 @@
                 :disabled="row.auditStatus === 1"
               >
                 <el-switch
-                  :model-value="row.shelfStatus === 1"
+                  :model-value="row.shelfStatus"
                   :active-value="1"
                   :inactive-value="0"
                   :disabled="row.auditStatus !== 1"

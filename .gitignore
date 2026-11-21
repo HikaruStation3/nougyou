@@ -3,6 +3,7 @@ backend/target/
 *.class
 *.jar
 *.log
+backend/backend.log.*
 .idea/
 *.iml
 

@@ -1,0 +1,54 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: nougyou-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:nougyou}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  ai:
+    openai:
+      # 任意 OpenAI 兼容服务均可：OpenAI / DeepSeek / 通义千问 / Ollama 等
+      api-key: ${OPENAI_API_KEY:sk-please-set-your-key}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4o-mini}
+          temperature: 0.7
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:nougyou}
+
+nougyou:
+  jwt:
+    # 生产环境务必通过环境变量覆盖，长度不少于 32 字节
+    secret: ${JWT_SECRET:nougyou-jwt-secret-key-change-me-0123456789abcdef}
+    access-token-expire-minutes: 120
+    refresh-token-expire-days: 7
+  captcha:
+    # 登录是否校验图形验证码
+    enabled: true
+
+logging:
+  level:
+    com.nougyou: info

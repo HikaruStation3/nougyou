@@ -1,0 +1,18 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+*.log
+.idea/
+*.iml
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/auto-imports.d.ts
+frontend/components.d.ts
+
+# OS
+.DS_Store
+Thumbs.db

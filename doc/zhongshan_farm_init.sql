@@ -663,7 +663,7 @@ INSERT INTO `sys_user`
 
 /* ------------------ 3.1 菜单与权限 ------------------ */
 /* 与后端 com.nougyou.config.DataInitializer 保持一致：
-   4 个菜单权限 + 14 个接口/按钮权限，共 18 个权限点。
+   4 个菜单权限 + 19 个接口/按钮权限，共 23 个权限点。
    type：MENU 菜单 / BUTTON 操作 */
 INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`code`,`type`,`sort`) VALUES
 (1,  0,  '用户管理',    'sys:user:menu',          'MENU',   1),
@@ -683,23 +683,29 @@ INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`code`,`type`,`sort`) VALU
 (15, 0,  '商品浏览',    'product:view',           'BUTTON', 5),
 (16, 0,  '商品管理',    'product:manage',         'BUTTON', 6),
 (17, 0,  '下单',        'order:create',           'BUTTON', 7),
-(18, 0,  '订单管理',    'order:manage',           'BUTTON', 8);
+(18, 0,  '订单管理',    'order:manage',           'BUTTON', 8),
+(19, 0,  '入驻申请提交', 'farmerApply:submit',     'BUTTON', 9),
+(20, 0,  '我的入驻申请', 'farmerApply:my',         'BUTTON', 10),
+(21, 0,  '入驻申请列表', 'farmerApply:list',       'BUTTON', 11),
+(22, 0,  '入驻申请详情', 'farmerApply:detail',     'BUTTON', 12),
+(23, 0,  '入驻申请审核', 'farmerApply:audit',      'BUTTON', 13);
 
 /* 角色授权：与后端默认配置一致（FR-039） */
 INSERT INTO `sys_role_permission` (`role_id`,`permission_id`) VALUES
-/* 管理员：全部 18 个权限点 */
+/* 管理员：全部 23 个权限点 */
 (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),
 (1,7),(1,8),(1,9),
 (1,10),(1,11),
 (1,12),(1,13),(1,14),
 (1,15),(1,16),(1,17),(1,18),
-/* 买家：商品浏览、下单 */
-(2,15),(2,17),
-/* 农户商家：AI、文件、商品、订单 */
+(1,19),(1,20),(1,21),(1,22),(1,23),
+/* 买家：商品浏览、下单、入驻申请提交与查询 */
+(2,15),(2,17),(2,19),(2,20),
+/* 农户商家：AI、文件、商品、订单、我的入驻申请 */
 (3,10),(3,11),
 (3,12),(3,13),(3,14),
 (3,15),(3,16),
-(3,17),(3,18);
+(3,17),(3,18),(3,20);
 
 /* ------------------ 4. 入驻申请（FR-013 / FR-033） ------------------ */
 INSERT INTO `farmer_apply`

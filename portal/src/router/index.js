@@ -25,6 +25,12 @@ const routes = [
         meta: { title: "注册" },
       },
       {
+        path: "join",
+        name: "join",
+        component: () => import("../views/Join.vue"),
+        meta: { title: "加入我们", requiresAuth: true },
+      },
+      {
         path: "profile",
         name: "profile",
         component: () => import("../views/Profile.vue"),

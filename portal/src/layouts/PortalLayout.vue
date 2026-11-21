@@ -9,6 +9,7 @@
 
         <nav class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
+          <router-link to="/join" class="nav-link">加入我们</router-link>
           <router-link to="/profile" class="nav-link">个人中心</router-link>
         </nav>
 

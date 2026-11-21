@@ -40,6 +40,10 @@ public class MenuController {
             systemMenus.add(route("role", "system/role/index", "Role",
                     "角色权限", "el-icon-Lock", null, null));
         }
+        if (perms.contains("farmerApply:list")) {
+            systemMenus.add(route("farmer-apply", "system/farmer-apply/index", "FarmerApply",
+                    "入驻审核", "el-icon-DocumentChecked", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",

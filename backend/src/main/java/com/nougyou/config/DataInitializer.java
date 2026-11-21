@@ -55,7 +55,12 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("商品浏览", "product:view", "BUTTON", 14),
             new PermissionSeed("商品管理", "product:manage", "BUTTON", 15),
             new PermissionSeed("下单", "order:create", "BUTTON", 16),
-            new PermissionSeed("订单管理", "order:manage", "BUTTON", 17)
+            new PermissionSeed("订单管理", "order:manage", "BUTTON", 17),
+            new PermissionSeed("入驻申请提交", "farmerApply:submit", "BUTTON", 20),
+            new PermissionSeed("我的入驻申请", "farmerApply:my", "BUTTON", 21),
+            new PermissionSeed("入驻申请列表", "farmerApply:list", "BUTTON", 22),
+            new PermissionSeed("入驻申请详情", "farmerApply:detail", "BUTTON", 23),
+            new PermissionSeed("入驻申请审核", "farmerApply:audit", "BUTTON", 24)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -65,11 +70,13 @@ public class DataInitializer implements ApplicationRunner {
     private static final List<String> FARMER_PERMISSION_CODES = List.of(
             "ai:chat:menu", "ai:chat:use",
             "file:upload:menu", "file:upload", "file:delete",
-            "product:view", "product:manage", "order:create", "order:manage"
+            "product:view", "product:manage", "order:create", "order:manage",
+            "farmerApply:my"
     );
 
     private static final List<String> BUYER_PERMISSION_CODES = List.of(
-            "product:view", "order:create"
+            "product:view", "order:create",
+            "farmerApply:submit", "farmerApply:my"
     );
 
     private final SysDeptMapper deptMapper;
@@ -94,8 +101,8 @@ public class DataInitializer implements ApplicationRunner {
 
         // 管理员始终拥有全部权限点，后续新增权限时会自动补齐
         ensurePermissions(adminRole, ALL_PERMISSION_CODES);
-        assignIfEmpty(farmerRole, FARMER_PERMISSION_CODES);
-        assignIfEmpty(buyerRole, BUYER_PERMISSION_CODES);
+        ensurePermissions(farmerRole, FARMER_PERMISSION_CODES);
+        ensurePermissions(buyerRole, BUYER_PERMISSION_CODES);
 
         ensureUser("farmer01", "绿野农场店主", farmerRole.getId(), farm.getId());
 
@@ -218,13 +225,6 @@ public class DataInitializer implements ApplicationRunner {
             permission.setSort(seed.sort());
             permissionMapper.insert(permission);
         }
-    }
-
-    private void assignIfEmpty(SysRole role, List<String> permissionCodes) {
-        if (!rolePermissionMapper.selectPermissionIdsByRoleId(role.getId()).isEmpty()) {
-            return;
-        }
-        ensurePermissions(role, permissionCodes);
     }
 
     private void ensurePermissions(SysRole role, List<String> permissionCodes) {

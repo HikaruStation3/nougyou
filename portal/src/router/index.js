@@ -31,10 +31,28 @@ const routes = [
         meta: { title: "加入我们", requiresAuth: true },
       },
       {
+        path: "projects",
+        name: "projects",
+        component: () => import("../views/ProjectsList.vue"),
+        meta: { title: "农家乐项目" },
+      },
+      {
+        path: "projects/:id",
+        name: "project-detail",
+        component: () => import("../views/ProjectDetail.vue"),
+        meta: { title: "项目详情" },
+      },
+      {
         path: "profile",
         name: "profile",
         component: () => import("../views/Profile.vue"),
         meta: { title: "个人中心", requiresAuth: true },
+      },
+      {
+        path: "merchant/projects",
+        name: "merchant-projects",
+        component: () => import("../views/MerchantProjects.vue"),
+        meta: { title: "我的农家乐", requiresAuth: true },
       },
     ],
   },

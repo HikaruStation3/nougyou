@@ -60,7 +60,14 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("我的入驻申请", "farmerApply:my", "BUTTON", 21),
             new PermissionSeed("入驻申请列表", "farmerApply:list", "BUTTON", 22),
             new PermissionSeed("入驻申请详情", "farmerApply:detail", "BUTTON", 23),
-            new PermissionSeed("入驻申请审核", "farmerApply:audit", "BUTTON", 24)
+            new PermissionSeed("入驻申请审核", "farmerApply:audit", "BUTTON", 24),
+            new PermissionSeed("农家乐列表", "project:list", "BUTTON", 30),
+            new PermissionSeed("农家乐详情", "project:detail", "BUTTON", 31),
+            new PermissionSeed("申请农家乐项目", "project:add", "BUTTON", 32),
+            new PermissionSeed("我的农家乐项目", "project:my", "BUTTON", 33),
+            new PermissionSeed("编辑农家乐项目", "project:edit", "BUTTON", 34),
+            new PermissionSeed("项目上下架", "project:shelf", "BUTTON", 35),
+            new PermissionSeed("农家乐项目审核", "project:audit", "BUTTON", 36)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -71,12 +78,15 @@ public class DataInitializer implements ApplicationRunner {
             "ai:chat:menu", "ai:chat:use",
             "file:upload:menu", "file:upload", "file:delete",
             "product:view", "product:manage", "order:create", "order:manage",
-            "farmerApply:my"
+            "farmerApply:my",
+            "project:list", "project:detail",
+            "project:add", "project:my", "project:edit", "project:shelf"
     );
 
     private static final List<String> BUYER_PERMISSION_CODES = List.of(
             "product:view", "order:create",
-            "farmerApply:submit", "farmerApply:my"
+            "farmerApply:submit", "farmerApply:my",
+            "project:list", "project:detail"
     );
 
     private final SysDeptMapper deptMapper;

@@ -56,3 +56,30 @@ CREATE TABLE IF NOT EXISTS `sys_role_permission` (
     `permission_id` BIGINT NOT NULL COMMENT '权限ID',
     PRIMARY KEY (`role_id`, `permission_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '角色权限关联表';
+
+CREATE TABLE IF NOT EXISTS `farm_project` (
+    `id`             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '项目ID',
+    `farmer_id`      BIGINT       NOT NULL                COMMENT '所属农户商家用户ID',
+    `title`          VARCHAR(150) NOT NULL                COMMENT '项目名称',
+    `project_type`   VARCHAR(30)  NOT NULL DEFAULT '农家乐' COMMENT '项目类型',
+    `cover`          VARCHAR(255)          DEFAULT NULL   COMMENT '封面图',
+    `images`         TEXT                                  COMMENT '环境图集（逗号分隔）',
+    `address`        VARCHAR(200)          DEFAULT NULL   COMMENT '项目地址',
+    `intro`          TEXT                                  COMMENT '项目介绍',
+    `price_desc`     VARCHAR(100)          DEFAULT NULL   COMMENT '价格说明，如 人均80元',
+    `capacity`       INT                   DEFAULT NULL   COMMENT '可接待人数',
+    `contact_phone`  VARCHAR(20)           DEFAULT NULL   COMMENT '联系电话',
+    `business_hours` VARCHAR(80)           DEFAULT NULL   COMMENT '营业时间',
+    `audit_status`   TINYINT      NOT NULL DEFAULT 0      COMMENT '审核状态 0待审核 1通过 2驳回',
+    `audit_user_id`  BIGINT                DEFAULT NULL   COMMENT '审核管理员ID',
+    `audit_time`     DATETIME              DEFAULT NULL   COMMENT '审核时间',
+    `audit_remark`   VARCHAR(255)          DEFAULT NULL   COMMENT '审核意见',
+    `shelf_status`   TINYINT      NOT NULL DEFAULT 1      COMMENT '1已上架 0已下架',
+    `view_count`     INT          NOT NULL DEFAULT 0      COMMENT '浏览量',
+    `create_time`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted`        TINYINT      NOT NULL DEFAULT 0      COMMENT '逻辑删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_farmer` (`farmer_id`),
+    KEY `idx_audit` (`audit_status`,`shelf_status`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '扶贫项目（农家乐）表';

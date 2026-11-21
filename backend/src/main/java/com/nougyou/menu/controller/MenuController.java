@@ -44,6 +44,10 @@ public class MenuController {
             systemMenus.add(route("farmer-apply", "system/farmer-apply/index", "FarmerApply",
                     "入驻审核", "el-icon-DocumentChecked", null, null));
         }
+        if (perms.contains("project:audit")) {
+            systemMenus.add(route("project", "system/project/index", "Project",
+                    "农家乐审核", "el-icon-Document", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",

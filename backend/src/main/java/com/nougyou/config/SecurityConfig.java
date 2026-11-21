@@ -50,7 +50,12 @@ public class SecurityConfig {
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/captcha",
                                 "/api/v1/auth/refresh-token",
-                                "/error"
+                                "/error",
+                                // 农家乐项目公开数据：游客可匿名浏览列表与详情
+                                "/api/v1/projects",
+                                "/api/v1/projects/**",
+                                "/api/projects",
+                                "/api/projects/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())

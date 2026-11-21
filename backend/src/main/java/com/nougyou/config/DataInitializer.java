@@ -47,6 +47,15 @@ public class DataInitializer implements ApplicationRunner {
             roleMapper.insert(role);
         }
 
+        SysRole userRole = roleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, "USER"));
+        if (userRole == null) {
+            userRole = new SysRole();
+            userRole.setName("普通用户");
+            userRole.setCode("USER");
+            userRole.setSort(2);
+            roleMapper.insert(userRole);
+        }
+
         SysUser admin = userMapper.selectOne(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, "admin"));
         if (admin == null) {
             admin = new SysUser();

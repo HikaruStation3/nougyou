@@ -3,6 +3,7 @@ package com.nougyou.auth.service;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.nougyou.auth.dto.LoginRequest;
 import com.nougyou.auth.dto.LoginResponse;
+import com.nougyou.auth.dto.RegisterRequest;
 import com.nougyou.common.api.ResultCode;
 import com.nougyou.common.exception.BusinessException;
 import com.nougyou.security.JwtTokenProvider;
@@ -40,6 +41,27 @@ public class AuthService {
             throw new BusinessException(ResultCode.LOGIN_FAILED, "账号已被禁用");
         }
         return buildTokens(user);
+    }
+
+    public void register(RegisterRequest request) {
+        String username = request.username().trim();
+        if (userMapper.exists(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, username))) {
+            throw new BusinessException("用户名已存在");
+        }
+        SysUser user = new SysUser();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setNickname(StringUtils.hasText(request.nickname()) ? request.nickname().trim() : username);
+        user.setMobile(request.mobile());
+        user.setEmail(request.email());
+        user.setGender(0);
+        user.setStatus(1);
+
+        SysRole userRole = roleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, "USER"));
+        if (userRole != null) {
+            user.setRoleId(userRole.getId());
+        }
+        userMapper.insert(user);
     }
 
     public LoginResponse refresh(String refreshToken) {

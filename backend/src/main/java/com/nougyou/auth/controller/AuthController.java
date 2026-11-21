@@ -3,6 +3,7 @@ package com.nougyou.auth.controller;
 import com.nougyou.auth.dto.CaptchaResponse;
 import com.nougyou.auth.dto.LoginRequest;
 import com.nougyou.auth.dto.LoginResponse;
+import com.nougyou.auth.dto.RegisterRequest;
 import com.nougyou.auth.service.AuthService;
 import com.nougyou.auth.service.CaptchaService;
 import com.nougyou.common.api.ApiResponse;
@@ -32,6 +33,12 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ApiResponse.ok(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<Void> register(@Valid @RequestBody RegisterRequest request) {
+        authService.register(request);
+        return ApiResponse.ok();
     }
 
     @PostMapping("/refresh-token")

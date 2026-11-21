@@ -12,6 +12,9 @@ frontend/dist/
 frontend/.vite/
 frontend/auto-imports.d.ts
 frontend/components.d.ts
+portal/node_modules/
+portal/dist/
+portal/.vite/
 
 # OS
 .DS_Store

@@ -10,8 +10,9 @@
              mysql -u root -p --default-character-set=utf8mb4 < zhongshan_farm_init.sql
    -----------------------------------------------------------------
    表清单与需求映射
-     一、权限体系    sys_role / sys_user / sys_user_role
+     一、权限体系    sys_dept / sys_role / sys_user
                      sys_permission / sys_role_permission      FR-001/029/039, NFR-008
+                     （与后端 com.nougyou 现有 RBAC 实现保持一致）
      二、入驻审核    farmer_apply                              FR-013 / FR-033
      三、内容资讯    cms_policy / cms_news                     FR-003/004/015/030
      四、扶贫项目    farm_project                              FR-005/016/034
@@ -35,89 +36,78 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 /* 库与表统一使用字符集默认排序规则，避免跨表 JOIN 出现 collation 混用报错。
    MySQL 8.0 默认 utf8mb4_0900_ai_ci，5.7 默认 utf8mb4_general_ci，均为中文安全。 */
-CREATE DATABASE IF NOT EXISTS `zhongshan_farm`
+CREATE DATABASE IF NOT EXISTS `nougyou`
   DEFAULT CHARACTER SET utf8mb4;
-USE `zhongshan_farm`;
+USE `nougyou`;
 
 /* =================================================================
    一、权限体系（RBAC）
+   与后端 com.nougyou 现有实现保持一致：
+   sys_dept / sys_role / sys_user / sys_permission / sys_role_permission
    ================================================================= */
 
-DROP TABLE IF EXISTS `sys_role`;
-CREATE TABLE `sys_role` (
-  `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '角色ID',
-  `role_code`   VARCHAR(32) NOT NULL                COMMENT '角色编码 BUYER/FARMER/ADMIN',
-  `role_name`   VARCHAR(32) NOT NULL                COMMENT '角色名称',
-  `description` VARCHAR(255)         DEFAULT NULL   COMMENT '角色说明',
-  `sort`        INT         NOT NULL DEFAULT 0      COMMENT '排序',
-  `status`      TINYINT     NOT NULL DEFAULT 1      COMMENT '状态 1启用 0禁用',
-  `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_role_code` (`role_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表（买家/农户商家/平台管理员三角色独立，FR-039）';
-
-DROP TABLE IF EXISTS `sys_user`;
-CREATE TABLE `sys_user` (
-  `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `username`        VARCHAR(50)  NOT NULL                COMMENT '登录账号',
-  `password`        VARCHAR(100) NOT NULL                COMMENT '密码（BCrypt 加密）',
-  `real_name`       VARCHAR(50)           DEFAULT NULL   COMMENT '真实姓名',
-  `nickname`        VARCHAR(50)           DEFAULT NULL   COMMENT '昵称/店铺展示名',
-  `avatar`          VARCHAR(255)          DEFAULT NULL   COMMENT '头像地址',
-  `phone`           VARCHAR(20)           DEFAULT NULL   COMMENT '手机号',
-  `email`           VARCHAR(100)          DEFAULT NULL   COMMENT '邮箱',
-  `gender`          TINYINT     NOT NULL DEFAULT 0       COMMENT '性别 0未知 1男 2女',
-  `role_code`       VARCHAR(32) NOT NULL DEFAULT 'BUYER' COMMENT '主角色 BUYER/FARMER/ADMIN（注册默认买家，FR-001）',
-  `village`         VARCHAR(50)           DEFAULT NULL   COMMENT '所属村（钟山镇下辖村）',
-  `is_farmer`       TINYINT     NOT NULL DEFAULT 0       COMMENT '是否已认证农户商家 1是 0否',
-  `shop_name`       VARCHAR(80)           DEFAULT NULL   COMMENT '店铺名称',
-  `status`          TINYINT     NOT NULL DEFAULT 1       COMMENT '状态 1正常 0禁用',
-  `last_login_time` DATETIME              DEFAULT NULL   COMMENT '最后登录时间',
-  `create_time`     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time`     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted`         TINYINT     NOT NULL DEFAULT 0       COMMENT '逻辑删除 1已删除',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username` (`username`),
-  KEY `idx_role` (`role_code`,`status`),
-  KEY `idx_phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表（买家/农户商家/管理员共用，FR-001/029/031）';
-
-DROP TABLE IF EXISTS `sys_user_role`;
-CREATE TABLE `sys_user_role` (
-  `id`          BIGINT   NOT NULL AUTO_INCREMENT,
-  `user_id`     BIGINT   NOT NULL COMMENT '用户ID',
-  `role_id`     BIGINT   NOT NULL COMMENT '角色ID',
-  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_role` (`user_id`,`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户-角色关联表';
-
-DROP TABLE IF EXISTS `sys_permission`;
-CREATE TABLE `sys_permission` (
-  `id`        BIGINT       NOT NULL AUTO_INCREMENT COMMENT '权限ID',
-  `parent_id` BIGINT       NOT NULL DEFAULT 0      COMMENT '父级ID，0为根节点',
-  `perm_name` VARCHAR(50)  NOT NULL                COMMENT '权限名称',
-  `perm_code` VARCHAR(80)  NOT NULL                COMMENT '权限标识，如 product:add',
-  `perm_type` TINYINT      NOT NULL DEFAULT 2      COMMENT '类型 1目录 2菜单 3按钮',
-  `path`      VARCHAR(120)          DEFAULT NULL   COMMENT '前端路由地址',
-  `icon`      VARCHAR(50)           DEFAULT NULL   COMMENT '菜单图标',
-  `sort`      INT          NOT NULL DEFAULT 0      COMMENT '排序',
-  `status`    TINYINT      NOT NULL DEFAULT 1      COMMENT '状态 1启用 0禁用',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_perm_code` (`perm_code`),
-  KEY `idx_parent` (`parent_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表（RBAC，NFR-008）';
-
 DROP TABLE IF EXISTS `sys_role_permission`;
+DROP TABLE IF EXISTS `sys_permission`;
+DROP TABLE IF EXISTS `sys_user_role`;
+DROP TABLE IF EXISTS `sys_user`;
+DROP TABLE IF EXISTS `sys_role`;
+DROP TABLE IF EXISTS `sys_dept`;
+
+CREATE TABLE `sys_dept` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `parent_id`   BIGINT       NOT NULL DEFAULT 0 COMMENT '父级ID，0为根',
+    `name`        VARCHAR(64)  NOT NULL COMMENT '商户名称',
+    `sort`        INT          NOT NULL DEFAULT 0 COMMENT '排序',
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '商户表';
+
+CREATE TABLE `sys_role` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `name`        VARCHAR(64)  NOT NULL COMMENT '角色名称',
+    `code`        VARCHAR(64)  NOT NULL COMMENT '角色编码',
+    `sort`        INT          NOT NULL DEFAULT 0 COMMENT '排序',
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_role_code` (`code`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '角色表';
+
+CREATE TABLE `sys_user` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `username`    VARCHAR(64)  NOT NULL COMMENT '用户名',
+    `password`    VARCHAR(100) NOT NULL COMMENT '密码（BCrypt）',
+    `nickname`    VARCHAR(64)           DEFAULT NULL COMMENT '昵称',
+    `avatar`      VARCHAR(512)          DEFAULT NULL COMMENT '头像地址',
+    `mobile`      VARCHAR(20)           DEFAULT NULL COMMENT '手机号',
+    `email`       VARCHAR(128)          DEFAULT NULL COMMENT '邮箱',
+    `gender`      TINYINT               DEFAULT 0 COMMENT '性别：0未知 1男 2女',
+    `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态：1启用 0禁用',
+    `dept_id`     BIGINT                DEFAULT NULL COMMENT '商户ID',
+    `role_id`     BIGINT                DEFAULT NULL COMMENT '角色ID',
+    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删除 1已删除',
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_username` (`username`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '用户表';
+
+CREATE TABLE `sys_permission` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `parent_id`   BIGINT       NOT NULL DEFAULT 0 COMMENT '父级权限ID，0为根',
+    `name`        VARCHAR(64)  NOT NULL COMMENT '权限名称',
+    `code`        VARCHAR(100) NOT NULL COMMENT '权限标识，如 sys:user:query',
+    `type`        VARCHAR(16)  NOT NULL DEFAULT 'BUTTON' COMMENT '类型：MENU 菜单 / BUTTON 操作',
+    `sort`        INT          NOT NULL DEFAULT 0 COMMENT '排序',
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_permission_code` (`code`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '权限点表';
+
 CREATE TABLE `sys_role_permission` (
-  `id`            BIGINT   NOT NULL AUTO_INCREMENT,
-  `role_id`       BIGINT   NOT NULL COMMENT '角色ID',
-  `permission_id` BIGINT   NOT NULL COMMENT '权限ID',
-  `create_time`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_role_perm` (`role_id`,`permission_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色-权限关联表';
+    `role_id`       BIGINT NOT NULL COMMENT '角色ID',
+    `permission_id` BIGINT NOT NULL COMMENT '权限ID',
+    PRIMARY KEY (`role_id`, `permission_id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '角色权限关联表';
 
 /* =================================================================
    二、农户商家入驻申请（FR-013 提交 / FR-033 审核）
@@ -590,9 +580,9 @@ SELECT
   e.id                                   AS entrust_id,
   e.entrust_no                           AS entrust_no,
   e.entrust_user_id                      AS entrust_user_id,
-  eu.real_name                           AS entrust_user_name,
+  eu.nickname                            AS entrust_user_name,
   e.agent_user_id                        AS agent_user_id,
-  au.real_name                           AS agent_user_name,
+  au.nickname                            AS agent_user_name,
   e.product_id                           AS product_id,
   p.name                                 AS product_name,
   p.stock                                AS stock,
@@ -637,74 +627,79 @@ SET FOREIGN_KEY_CHECKS = 1;
    #                                                              #
    ################################################################ */
 
-USE `zhongshan_farm`;
+USE `nougyou`;
 
 /* ------------------ 1. 角色 ------------------ */
-INSERT INTO `sys_role` (`id`,`role_code`,`role_name`,`description`,`sort`,`status`) VALUES
-(1, 'BUYER',  '买家',     '注册即默认买家，浏览公开内容、选购农产品、下单与售后（FR-001）', 1, 1),
-(2, 'FARMER', '农户商家', '贫困户身份审核通过后的经营主体，管理商品、订单、短视频（FR-013）', 2, 1),
-(3, 'ADMIN',  '平台管理员', '内容审核、用户管理、订单与短视频监管、AI 助手管理（FR-029）',     3, 1);
+/* 与后端 com.nougyou.config.DataInitializer 一致：id 1 管理员 / 2 买家 / 3 农户商家 */
+INSERT INTO `sys_role` (`id`,`name`,`code`,`sort`) VALUES
+(1, '管理员',   'ADMIN',  1),
+(2, '买家',     'BUYER',  2),
+(3, '农户商家', 'FARMER', 3);
 
-/* ------------------ 2. 用户 ------------------ */
+/* ------------------ 2. 商户与用户 ------------------ */
+/* 商户复用 sys_dept，与后端「用户管理-商户」树一致 */
+INSERT INTO `sys_dept` (`id`,`parent_id`,`name`,`sort`) VALUES
+(1, 0, '商户中心',   0),
+(2, 1, '绿野农场',   1),
+(3, 1, '鲜果合作社', 2),
+(4, 1, '云岭茶庄',   3);
+
+/* ------------------ 3. 用户与权限 ------------------ */
 /* 所有账号密码均为 123456，存 BCrypt 密文；若登录校验不通过请用
    new BCryptPasswordEncoder().encode("123456") 重新生成后替换 */
 INSERT INTO `sys_user`
-(`id`,`username`,`password`,`real_name`,`nickname`,`avatar`,`phone`,`email`,`gender`,`role_code`,`village`,`is_farmer`,`shop_name`,`status`,`last_login_time`,`create_time`) VALUES
-(1, 'buyer01',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '陈小娟', '小娟',      '/img/avatar/u1.png', '13905041001', 'chenxj@qq.com',            2, 'BUYER',  '钟山村委会', 0, NULL,             1, '2026-11-20 09:12:33', '2026-08-15 10:00:00'),
-(2, 'buyer02',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '林志强', '阿强',      '/img/avatar/u2.png', '13905041002', 'linzq@qq.com',             1, 'BUYER',  '湖亭村',     0, NULL,             1, '2026-11-19 20:41:10', '2026-08-20 14:20:00'),
-(3, 'buyer03',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '黄丽',   '丽丽',      '/img/avatar/u3.png', '13905041003', 'huangli@163.com',          2, 'BUYER',  '西林村',     0, NULL,             1, '2026-11-18 15:03:55', '2026-09-01 09:30:00'),
-(4, 'farmer01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '吴国平', '吴叔山货',  '/img/avatar/u4.png', '13905042001', 'wugp@qq.com',              1, 'FARMER', '钟山村委会', 1, '吴叔山货铺',      1, '2026-11-21 08:20:00', '2026-09-10 09:05:00'),
-(5, 'farmer02', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '郑秀兰', '秀兰农场',  '/img/avatar/u5.png', '13905042002', 'zhengxl@qq.com',           2, 'FARMER', '湖亭村',     1, '秀兰农场',        1, '2026-11-21 10:05:12', '2026-09-13 14:35:00'),
-(6, 'farmer03', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '蔡建华', '蔡伯',      '/img/avatar/u6.png', '13905042003', NULL,                       1, 'FARMER', '西林村',     1, '蔡伯土产',        1, '2026-11-17 07:55:40', '2026-10-06 16:25:00'),
-(7, 'admin01',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', 'admin', '/img/avatar/a1.png', '13905043001', 'admin@zhongshan.gov.cn',   1, 'ADMIN',  NULL,         0, NULL,             1, '2026-11-21 19:30:00', '2026-08-01 09:00:00'),
-(8, 'admin02',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '内容审核员', '审核小王', '/img/avatar/a2.png', '13905043002', 'audit@zhongshan.gov.cn',   2, 'ADMIN',  NULL,         0, NULL,             1, '2026-11-21 18:10:22', '2026-08-01 09:05:00'),
-(9, 'buyer04',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '林小雨', '小雨',      '/img/avatar/u9.png', '13905041009', NULL,                       2, 'BUYER',  '钟山村委会', 0, NULL,             1, '2026-11-16 12:00:00', '2026-11-18 10:00:00'),
-(10,'buyer05',  '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '张伟',   '小伟',      '/img/avatar/u10.png','13905041010', NULL,                       1, 'BUYER',  '西林村',     0, NULL,             1, NULL,                 '2026-11-20 11:00:00');
+(`id`,`username`,`password`,`nickname`,`avatar`,`mobile`,`email`,`gender`,`status`,`dept_id`,`role_id`,`create_time`) VALUES
+(1, 'buyer01',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '小娟',      '/img/avatar/u1.png', '13905041001', 'chenxj@qq.com',            2, 1, 1, 2, '2026-08-15 10:00:00'),
+(2, 'buyer02',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '阿强',      '/img/avatar/u2.png', '13905041002', 'linzq@qq.com',             1, 1, 1, 2, '2026-08-20 14:20:00'),
+(3, 'buyer03',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '丽丽',      '/img/avatar/u3.png', '13905041003', 'huangli@163.com',          2, 1, 1, 2, '2026-09-01 09:30:00'),
+(4, 'farmer01', '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '吴叔山货铺', '/img/avatar/u4.png', '13905042001', 'wugp@qq.com',              1, 1, 2, 3, '2026-09-10 09:05:00'),
+(5, 'farmer02', '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '秀兰农场',  '/img/avatar/u5.png', '13905042002', 'zhengxl@qq.com',           2, 1, 3, 3, '2026-09-13 14:35:00'),
+(6, 'farmer03', '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '蔡伯土产',  '/img/avatar/u6.png', '13905042003', NULL,                       1, 1, 4, 3, '2026-10-06 16:25:00'),
+(7, 'admin01',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '系统管理员', '/img/avatar/a1.png', '13905043001', 'admin@zhongshan.gov.cn',   1, 1, 1, 1, '2026-08-01 09:00:00'),
+(8, 'admin02',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '内容审核员', '/img/avatar/a2.png', '13905043002', 'audit@zhongshan.gov.cn',   2, 1, 1, 1, '2026-08-01 09:05:00'),
+(9, 'buyer04',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '小雨',      '/img/avatar/u9.png', '13905041009', NULL,                       2, 1, 1, 2, '2026-11-18 10:00:00'),
+(10,'buyer05',  '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '小伟',      '/img/avatar/u10.png','13905041010', NULL,                       1, 1, 1, 2, '2026-11-20 11:00:00'),
+(11,'admin',    '$2a$10$.6Km.luLvoLmumLxnlnLkeGzx.4LpayD1eDZu3XQKZvrlrtfYVm3W', '管理员',    NULL,                 '13905043000', 'admin@nougyou.local',      1, 1, 1, 1, '2026-08-01 09:00:00');
 
-INSERT INTO `sys_user_role` (`user_id`,`role_id`) VALUES
-(1,1),(2,1),(3,1),(9,1),(10,1),
-(4,2),(5,2),(6,2),
-(7,3),(8,3);
-
-/* ------------------ 3. 菜单与权限 ------------------ */
+/* ------------------ 3.1 菜单与权限 ------------------ */
 /* 与后端 com.nougyou.config.DataInitializer 保持一致：
    4 个菜单权限 + 14 个接口/按钮权限，共 18 个权限点。
-   perm_type：1 目录 2 菜单 3 按钮 */
-INSERT INTO `sys_permission` (`id`,`parent_id`,`perm_name`,`perm_code`,`perm_type`,`path`,`icon`,`sort`,`status`) VALUES
-(1,  0,  '用户管理',     'sys:user:menu',         2, '/system/user', 'user',   11, 1),
-(2,  1,  '用户查询',     'sys:user:query',        3, NULL,           NULL,      1, 1),
-(3,  1,  '用户新增',     'sys:user:create',       3, NULL,           NULL,      2, 1),
-(4,  1,  '用户编辑',     'sys:user:update',       3, NULL,           NULL,      3, 1),
-(5,  1,  '用户删除',     'sys:user:delete',       3, NULL,           NULL,      4, 1),
-(6,  1,  '重置密码',     'sys:user:reset-password', 3, NULL,         NULL,      5, 1),
-(7,  0,  '角色权限',     'sys:role:menu',         2, '/system/role', 'lock',   12, 1),
-(8,  7,  '角色查询',     'sys:role:query',        3, NULL,           NULL,      1, 1),
-(9,  7,  '角色授权',     'sys:role:update',       3, NULL,           NULL,      2, 1),
-(10, 0,  'AI 对话',      'ai:chat:menu',          2, '/ai/chat',     'chat',   20, 1),
-(11, 10, 'AI 对话调用',  'ai:chat:use',           3, NULL,           NULL,      1, 1),
-(12, 0,  '文件上传',     'file:upload:menu',      2, '/tools/file',  'upload', 30, 1),
-(13, 12, '文件上传',     'file:upload',           3, NULL,           NULL,      1, 1),
-(14, 12, '文件删除',     'file:delete',           3, NULL,           NULL,      2, 1),
-(15, 0,  '商品浏览',     'product:view',          3, NULL,           NULL,     40, 1),
-(16, 0,  '商品管理',     'product:manage',        3, NULL,           NULL,     41, 1),
-(17, 0,  '下单',         'order:create',          3, NULL,           NULL,     50, 1),
-(18, 0,  '订单管理',     'order:manage',          3, NULL,           NULL,     51, 1);
+   type：MENU 菜单 / BUTTON 操作 */
+INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`code`,`type`,`sort`) VALUES
+(1,  0,  '用户管理',    'sys:user:menu',          'MENU',   1),
+(2,  1,  '用户查询',    'sys:user:query',         'BUTTON', 1),
+(3,  1,  '用户新增',    'sys:user:create',        'BUTTON', 2),
+(4,  1,  '用户编辑',    'sys:user:update',        'BUTTON', 3),
+(5,  1,  '用户删除',    'sys:user:delete',        'BUTTON', 4),
+(6,  1,  '重置密码',    'sys:user:reset-password','BUTTON', 5),
+(7,  0,  '角色权限',    'sys:role:menu',          'MENU',   2),
+(8,  7,  '角色查询',    'sys:role:query',         'BUTTON', 1),
+(9,  7,  '角色授权',    'sys:role:update',        'BUTTON', 2),
+(10, 0,  'AI 对话',     'ai:chat:menu',           'MENU',   3),
+(11, 10, 'AI 对话调用', 'ai:chat:use',            'BUTTON', 1),
+(12, 0,  '文件上传',    'file:upload:menu',       'MENU',   4),
+(13, 12, '文件上传',    'file:upload',            'BUTTON', 1),
+(14, 12, '文件删除',    'file:delete',            'BUTTON', 2),
+(15, 0,  '商品浏览',    'product:view',           'BUTTON', 5),
+(16, 0,  '商品管理',    'product:manage',         'BUTTON', 6),
+(17, 0,  '下单',        'order:create',           'BUTTON', 7),
+(18, 0,  '订单管理',    'order:manage',           'BUTTON', 8);
 
 /* 角色授权：与后端默认配置一致（FR-039） */
 INSERT INTO `sys_role_permission` (`role_id`,`permission_id`) VALUES
-/* 买家：商品浏览、下单 */
-(1,15),(1,17),
-/* 农户商家：AI、文件、商品、订单 */
-(2,10),(2,11),
-(2,12),(2,13),(2,14),
-(2,15),(2,16),
-(2,17),(2,18),
 /* 管理员：全部 18 个权限点 */
-(3,1),(3,2),(3,3),(3,4),(3,5),(3,6),
-(3,7),(3,8),(3,9),
+(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),
+(1,7),(1,8),(1,9),
+(1,10),(1,11),
+(1,12),(1,13),(1,14),
+(1,15),(1,16),(1,17),(1,18),
+/* 买家：商品浏览、下单 */
+(2,15),(2,17),
+/* 农户商家：AI、文件、商品、订单 */
 (3,10),(3,11),
 (3,12),(3,13),(3,14),
-(3,15),(3,16),(3,17),(3,18);
+(3,15),(3,16),
+(3,17),(3,18);
 
 /* ------------------ 4. 入驻申请（FR-013 / FR-033） ------------------ */
 INSERT INTO `farmer_apply`

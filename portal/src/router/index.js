@@ -49,6 +49,24 @@ const routes = [
         meta: { title: "我的咨询" },
       },
       {
+        path: "products",
+        name: "products",
+        component: () => import("../views/ProductsList.vue"),
+        meta: { title: "农产品商城" },
+      },
+      {
+        path: "products/:id",
+        name: "product-detail",
+        component: () => import("../views/ProductDetail.vue"),
+        meta: { title: "商品详情" },
+      },
+      {
+        path: "cart",
+        name: "cart",
+        component: () => import("../views/Cart.vue"),
+        meta: { title: "我的购物车", requiresAuth: true },
+      },
+      {
         path: "profile",
         name: "profile",
         component: () => import("../views/Profile.vue"),
@@ -59,6 +77,12 @@ const routes = [
         name: "merchant-projects",
         component: () => import("../views/MerchantProjects.vue"),
         meta: { title: "我的农家乐", requiresAuth: true },
+      },
+      {
+        path: "merchant/products",
+        name: "merchant-products",
+        component: () => import("../views/MerchantProducts.vue"),
+        meta: { title: "我的农产品", requiresAuth: true },
       },
     ],
   },
@@ -75,7 +99,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · Nougyou` : "Nougyou 用户门户";
+  document.title = to.meta.title
+    ? `${to.meta.title} · Nougyou`
+    : "Nougyou 用户门户";
   if (to.meta.requiresAuth && !localStorage.getItem("portal_token")) {
     return { name: "login", query: { redirect: to.fullPath } };
   }

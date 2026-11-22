@@ -764,7 +764,13 @@ INSERT INTO `product_category` (`id`,`name`,`parent_id`,`icon`,`sort`,`status`) 
 (3,'山珍干货',0,'/img/cate/c3.png',3,1),
 (4,'时令水果',0,'/img/cate/c4.png',4,1),
 (5,'蜂蜜茶叶',0,'/img/cate/c5.png',5,1),
-(6,'手工艺品',0,'/img/cate/c6.png',6,1);
+(6,'手工艺品',0,'/img/cate/c6.png',6,1),
+(7,'米粉面食',1,NULL,1,1),
+(8,'禽蛋腊味',2,NULL,1,1),
+(9,'菌菇干货',3,NULL,1,1),
+(10,'柑橘蜜柚',4,NULL,1,1),
+(11,'土蜂蜜',5,NULL,1,1),
+(12,'竹编器物',6,NULL,1,1);
 
 /* ------------------ 9. 农产品（FR-017） ------------------ */
 INSERT INTO `product`

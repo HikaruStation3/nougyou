@@ -61,7 +61,16 @@ public class SecurityConfig {
                                 "/api/v1/projects",
                                 "/api/v1/projects/**",
                                 "/api/projects",
-                                "/api/projects/**"
+                                "/api/projects/**",
+                                // 农产品公开数据：游客可匿名浏览分类树、商品列表与详情
+                                "/api/v1/categories",
+                                "/api/v1/categories/**",
+                                "/api/categories",
+                                "/api/categories/**",
+                                "/api/v1/products",
+                                "/api/v1/products/**",
+                                "/api/products",
+                                "/api/products/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())

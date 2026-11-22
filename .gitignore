@@ -21,5 +21,9 @@ portal/.vite/
 .DS_Store
 Thumbs.db
 
+# 本地联调临时文件（截图、接口自测脚本等）
+.tmp_dump/
+verify_*.png
+
 # WorkBuddy 本地工作区数据
 .workbuddy/

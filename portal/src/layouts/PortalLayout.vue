@@ -10,6 +10,7 @@
         <nav class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/projects" class="nav-link">农家乐项目</router-link>
+          <router-link to="/products" class="nav-link">农产品商城</router-link>
           <router-link to="/consult" class="nav-link">我的咨询</router-link>
           <router-link to="/join" class="nav-link">加入我们</router-link>
           <router-link to="/profile" class="nav-link">个人中心</router-link>
@@ -17,17 +18,40 @@
 
         <div class="nav-actions">
           <template v-if="store.state.user">
+            <router-link v-if="!isFarmer" to="/cart" class="cart-entry">
+              <el-badge :value="cartCount" :hidden="cartCount === 0" :max="99">
+                <el-button text :icon="ShoppingCart" />
+              </el-badge>
+            </router-link>
             <el-dropdown @command="handleCommand">
               <span class="user-entry">
-                <el-avatar :size="30" class="user-avatar">{{ initials }}</el-avatar>
-                <span class="user-name">{{ store.state.user.nickname || store.state.user.username }}</span>
+                <el-avatar :size="30" class="user-avatar">{{
+                  initials
+                }}</el-avatar>
+                <span class="user-name">{{
+                  store.state.user.nickname || store.state.user.username
+                }}</span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="consult">我的咨询</el-dropdown-item>
-                  <el-dropdown-item v-if="isFarmer" command="merchant">我的农家乐</el-dropdown-item>
-                  <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                  <el-dropdown-item v-if="!isFarmer" command="cart"
+                    >我的购物车</el-dropdown-item
+                  >
+                  <el-dropdown-item command="consult"
+                    >我的咨询</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant"
+                    >我的农家乐</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-products"
+                    >我的农产品</el-dropdown-item
+                  >
+                  <el-dropdown-item command="profile"
+                    >个人中心</el-dropdown-item
+                  >
+                  <el-dropdown-item command="logout" divided
+                    >退出登录</el-dropdown-item
+                  >
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -55,28 +79,59 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+import { ShoppingCart } from "@element-plus/icons-vue";
 import { useUserStore } from "../store/user";
+import { getCart } from "../api/cart";
+import { onCartChanged } from "../utils/cartBus";
 
 const router = useRouter();
+const route = useRoute();
 const store = useUserStore();
+const cartCount = ref(0);
 
 const initials = computed(() => {
   const name = store.state.user?.nickname || store.state.user?.username || "U";
   return name.slice(0, 1).toUpperCase();
 });
 
-const isFarmer = computed(() => (store.state.user?.roles || []).includes("FARMER"));
+const isFarmer = computed(() =>
+  (store.state.user?.roles || []).includes("FARMER"),
+);
+
+async function loadCartCount() {
+  if (!store.isLoggedIn()) {
+    cartCount.value = 0;
+    return;
+  }
+  try {
+    const items = await getCart();
+    cartCount.value = (items || []).reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0,
+    );
+  } catch {
+    cartCount.value = 0;
+  }
+}
 
 async function handleCommand(command) {
+  if (command === "cart") {
+    router.push("/cart");
+    return;
+  }
   if (command === "consult") {
     router.push("/consult");
     return;
   }
   if (command === "merchant") {
     router.push("/merchant/projects");
+    return;
+  }
+  if (command === "merchant-products") {
+    router.push("/merchant/products");
     return;
   }
   if (command === "profile") {
@@ -90,9 +145,25 @@ async function handleCommand(command) {
   }
 }
 
-onMounted(() => {
+let stopCartWatch = null;
+
+onMounted(async () => {
   if (store.isLoggedIn() && !store.state.user) {
-    store.loadUser().catch(() => {});
+    await store.loadUser().catch(() => {});
   }
+  await loadCartCount();
+  // 加购 / 改数量 / 删除后实时刷新徽标
+  stopCartWatch = onCartChanged(loadCartCount);
 });
+
+onBeforeUnmount(() => {
+  if (stopCartWatch) stopCartWatch();
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    loadCartCount();
+  },
+);
 </script>

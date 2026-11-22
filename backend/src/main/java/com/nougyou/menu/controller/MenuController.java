@@ -48,6 +48,12 @@ public class MenuController {
             systemMenus.add(route("project", "system/project/index", "Project",
                     "农家乐审核", "el-icon-Document", null, null));
         }
+        if (perms.contains("product:manage")) {
+            systemMenus.add(route("product", "system/product/index", "Product",
+                    "农产品管理", "el-icon-ShoppingCart", null, null));
+            systemMenus.add(route("category", "system/category/index", "ProductCategory",
+                    "农产品分类", "el-icon-Grid", null, null));
+        }
         if (perms.contains("ai:adminSession")) {
             systemMenus.add(route("ai-session", "ai/admin/session/index", "AiSessionMonitor",
                     "AI 对话监控", "el-icon-ChatLineSquare", null, null));

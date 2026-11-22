@@ -27,6 +27,16 @@
           <div class="head-tags">
             <el-tag type="success" effect="plain">{{ project.projectType }}</el-tag>
             <el-tag v-if="project.capacity" effect="plain">可接待 {{ project.capacity }} 人</el-tag>
+            <el-button
+              v-if="project.farmerId"
+              size="small"
+              type="primary"
+              plain
+              :icon="ChatDotRound"
+              @click="consultFarmer"
+            >
+              咨询商家
+            </el-button>
             <span class="view-count">
               <el-icon><View /></el-icon> {{ project.viewCount || 0 }} 次浏览
             </span>
@@ -86,13 +96,28 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, View } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+import { ArrowLeft, ChatDotRound, View } from "@element-plus/icons-vue";
 import { getProject } from "../api/project";
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
 const project = ref(null);
+
+/** 带上商家 ID 跳到我的咨询，由咨询页自动建会话 */
+function consultFarmer() {
+  if (!project.value?.farmerId) return;
+  if (!localStorage.getItem("portal_token")) {
+    ElMessage.warning("登录后即可咨询商家");
+    router.push({ name: "login", query: { redirect: `/projects/${route.params.id}` } });
+    return;
+  }
+  router.push({
+    path: "/consult",
+    query: { targetType: 2, targetId: project.value.farmerId },
+  });
+}
 
 const galleryList = computed(() => {
   if (!project.value) return [];

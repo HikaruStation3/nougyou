@@ -10,6 +10,7 @@
         <nav class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/projects" class="nav-link">农家乐项目</router-link>
+          <router-link to="/consult" class="nav-link">我的咨询</router-link>
           <router-link to="/join" class="nav-link">加入我们</router-link>
           <router-link to="/profile" class="nav-link">个人中心</router-link>
         </nav>
@@ -23,6 +24,7 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item command="consult">我的咨询</el-dropdown-item>
                   <el-dropdown-item v-if="isFarmer" command="merchant">我的农家乐</el-dropdown-item>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
@@ -69,6 +71,10 @@ const initials = computed(() => {
 const isFarmer = computed(() => (store.state.user?.roles || []).includes("FARMER"));
 
 async function handleCommand(command) {
+  if (command === "consult") {
+    router.push("/consult");
+    return;
+  }
   if (command === "merchant") {
     router.push("/merchant/projects");
     return;

@@ -67,7 +67,15 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("我的农家乐项目", "project:my", "BUTTON", 33),
             new PermissionSeed("编辑农家乐项目", "project:edit", "BUTTON", 34),
             new PermissionSeed("项目上下架", "project:shelf", "BUTTON", 35),
-            new PermissionSeed("农家乐项目审核", "project:audit", "BUTTON", 36)
+            new PermissionSeed("农家乐项目审核", "project:audit", "BUTTON", 36),
+            new PermissionSeed("沟通咨询", "service:list", "MENU", 40),
+            new PermissionSeed("发起咨询", "service:create", "BUTTON", 41),
+            new PermissionSeed("会话消息", "service:message", "BUTTON", 42),
+            new PermissionSeed("发送消息", "service:send", "BUTTON", 43),
+            new PermissionSeed("标记已读", "service:read", "BUTTON", 44),
+            new PermissionSeed("客服工作台", "service:adminList", "MENU", 45),
+            new PermissionSeed("客服接入会话", "service:accept", "BUTTON", 46),
+            new PermissionSeed("客服结束会话", "service:close", "BUTTON", 47)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -80,13 +88,15 @@ public class DataInitializer implements ApplicationRunner {
             "product:view", "product:manage", "order:create", "order:manage",
             "farmerApply:my",
             "project:list", "project:detail",
-            "project:add", "project:my", "project:edit", "project:shelf"
+            "project:add", "project:my", "project:edit", "project:shelf",
+            "service:list", "service:create", "service:message", "service:send", "service:read"
     );
 
     private static final List<String> BUYER_PERMISSION_CODES = List.of(
             "product:view", "order:create",
             "farmerApply:submit", "farmerApply:my",
-            "project:list", "project:detail"
+            "project:list", "project:detail",
+            "service:list", "service:create", "service:message", "service:send", "service:read"
     );
 
     private final SysDeptMapper deptMapper;

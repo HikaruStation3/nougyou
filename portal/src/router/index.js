@@ -43,6 +43,12 @@ const routes = [
         meta: { title: "项目详情" },
       },
       {
+        path: "consult",
+        name: "consult",
+        component: () => import("../views/Consult.vue"),
+        meta: { title: "我的咨询" },
+      },
+      {
         path: "profile",
         name: "profile",
         component: () => import("../views/Profile.vue"),

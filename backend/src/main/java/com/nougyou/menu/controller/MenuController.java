@@ -56,6 +56,10 @@ public class MenuController {
             systemMenus.add(route("ai-prompt", "ai/admin/prompt/index", "AiPromptConfig",
                     "AI 提示词管理", "el-icon-EditPen", null, null));
         }
+        if (perms.contains("service:adminList")) {
+            systemMenus.add(route("consult", "consult/admin/index", "ServiceWorkbench",
+                    "客服工作台", "el-icon-Service", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",
@@ -81,6 +85,17 @@ public class MenuController {
                     "文件上传", "el-icon-Upload", null, null);
             routes.add(route("/tools", "Layout", "/tools", "工具箱", "el-icon-FolderOpened",
                     "/tools/file", List.of(fileMenu)));
+        }
+        // 买家/农户商家：沟通咨询（FR-009 / FR-010）；管理员走客服工作台
+        List<Map<String, Object>> consultMenus = new ArrayList<>();
+        if (perms.contains("service:list") && !perms.contains("service:adminList")) {
+            consultMenus.add(route("chat", "consult/index", "ServiceConsult",
+                    "我的咨询", "el-icon-ChatLineRound", null, null));
+        }
+        if (!consultMenus.isEmpty()) {
+            String redirect = String.valueOf(consultMenus.get(0).get("path"));
+            routes.add(route("/consult", "Layout", "/consult", "沟通咨询", "el-icon-ChatLineRound",
+                    "/consult/" + redirect, consultMenus));
         }
         return ApiResponse.ok(routes);
     }

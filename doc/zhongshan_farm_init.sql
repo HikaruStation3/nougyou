@@ -370,6 +370,7 @@ CREATE TABLE `service_session` (
   `user_role`     VARCHAR(20) NOT NULL                COMMENT '发起方角色 BUYER/FARMER',
   `target_type`   TINYINT     NOT NULL DEFAULT 1      COMMENT '1平台客服（FR-009） 2农户商家（FR-010）',
   `target_id`     BIGINT               DEFAULT NULL   COMMENT '目标用户ID（联系商家时为商家ID）',
+  `product_id`    BIGINT               DEFAULT NULL   COMMENT '咨询商品ID（从商品页发起时记录，FR-010）',
   `admin_id`      BIGINT               DEFAULT NULL   COMMENT '接待管理员ID（FR-032）',
   `status`        TINYINT     NOT NULL DEFAULT 0      COMMENT '0排队中 1进行中 2已结束',
   `last_msg_time` DATETIME             DEFAULT NULL   COMMENT '最后消息时间',
@@ -688,7 +689,16 @@ INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`code`,`type`,`sort`) VALU
 (20, 0,  '我的入驻申请', 'farmerApply:my',         'BUTTON', 10),
 (21, 0,  '入驻申请列表', 'farmerApply:list',       'BUTTON', 11),
 (22, 0,  '入驻申请详情', 'farmerApply:detail',     'BUTTON', 12),
-(23, 0,  '入驻申请审核', 'farmerApply:audit',      'BUTTON', 13);
+(23, 0,  '入驻申请审核', 'farmerApply:audit',      'BUTTON', 13),
+/* 沟通咨询（FR-009 / FR-010 / FR-032） */
+(24, 0,  '沟通咨询',    'service:list',           'MENU',   5),
+(25, 24, '发起咨询',    'service:create',         'BUTTON', 1),
+(26, 24, '会话消息',    'service:message',        'BUTTON', 2),
+(27, 24, '发送消息',    'service:send',           'BUTTON', 3),
+(28, 24, '标记已读',    'service:read',           'BUTTON', 4),
+(29, 0,  '客服工作台',  'service:adminList',      'MENU',   14),
+(30, 29, '客服接入会话','service:accept',         'BUTTON', 1),
+(31, 29, '客服结束会话','service:close',          'BUTTON', 2);
 
 /* 角色授权：与后端默认配置一致（FR-039） */
 INSERT INTO `sys_role_permission` (`role_id`,`permission_id`) VALUES
@@ -699,13 +709,17 @@ INSERT INTO `sys_role_permission` (`role_id`,`permission_id`) VALUES
 (1,12),(1,13),(1,14),
 (1,15),(1,16),(1,17),(1,18),
 (1,19),(1,20),(1,21),(1,22),(1,23),
-/* 买家：商品浏览、下单、入驻申请提交与查询 */
+/* 管理员：沟通咨询全量 + 客服工作台 */
+(1,24),(1,25),(1,26),(1,27),(1,28),(1,29),(1,30),(1,31),
+/* 买家：商品浏览、下单、入驻申请提交与查询、沟通咨询 */
 (2,15),(2,17),(2,19),(2,20),
-/* 农户商家：AI、文件、商品、订单、我的入驻申请 */
+(2,24),(2,25),(2,26),(2,27),(2,28),
+/* 农户商家：AI、文件、商品、订单、我的入驻申请、沟通咨询 */
 (3,10),(3,11),
 (3,12),(3,13),(3,14),
 (3,15),(3,16),
-(3,17),(3,18),(3,20);
+(3,17),(3,18),(3,20),
+(3,24),(3,25),(3,26),(3,27),(3,28);
 
 /* ------------------ 4. 入驻申请（FR-013 / FR-033） ------------------ */
 INSERT INTO `farmer_apply`

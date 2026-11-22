@@ -93,9 +93,9 @@
         </el-table-column>
         <el-table-column label="售价" width="100" align="right">
           <template #default="{ row }">
-            <div class="font-medium text-[--el-color-danger]">￥{{ row.price ?? 0 }}</div>
+            <div class="font-medium text-[--el-color-danger]">￥{{ money(row.price) }}</div>
             <div v-if="row.originalPrice" class="text-xs text-[--el-text-color-secondary] line-through">
-              ￥{{ row.originalPrice }}
+              ￥{{ money(row.originalPrice) }}
             </div>
           </template>
         </el-table-column>
@@ -150,9 +150,9 @@
         <el-descriptions-item label="商品分类">{{ currentProduct.categoryName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="商家姓名">{{ currentProduct.farmerName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="店铺名称">{{ currentProduct.shopName || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="售价">￥{{ currentProduct.price ?? 0 }}</el-descriptions-item>
+        <el-descriptions-item label="售价">￥{{ money(currentProduct.price) }}</el-descriptions-item>
         <el-descriptions-item label="原价">
-          {{ currentProduct.originalPrice ? `￥${currentProduct.originalPrice}` : "-" }}
+          {{ currentProduct.originalPrice ? `￥${money(currentProduct.originalPrice)}` : "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="库存">
           {{ currentProduct.stock ?? 0 }} {{ currentProduct.unit || "" }}
@@ -237,6 +237,11 @@ const detailVisible = ref(false);
 const currentProduct = ref<ProductDetailItem>();
 
 const categoryOptions = computed(() => toTreeOptions(categoryTree.value));
+
+/** 金额统一保留两位小数 */
+function money(value?: number | string | null) {
+  return Number(value ?? 0).toFixed(2);
+}
 
 /** el-tree-select 取值约定：value 取分类 id */
 const treeProps = {

@@ -20,7 +20,7 @@
       >
         <el-table-column label="分类名称" min-width="220">
           <template #default="{ row }">
-            <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-2">
               <el-image
                 v-if="isImageIcon(row.icon)"
                 :src="row.icon"
@@ -29,7 +29,7 @@
               />
               <el-icon v-else-if="row.icon"><component :is="row.icon" /></el-icon>
               <span class="font-medium">{{ row.name }}</span>
-            </div>
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="id" label="ID" width="90" align="center" />

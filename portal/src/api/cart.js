@@ -5,8 +5,8 @@ import http from "./http";
  * GET /cart 列表、POST /cart 加购、PUT /cart/{id} 修改、DELETE /cart/{id} 删除、DELETE /cart 批量删除或清空
  */
 
-export function getCart() {
-  return http.get("/cart");
+export function getCart(options = {}) {
+  return http.get("/cart", options);
 }
 
 export function addToCart(data) {

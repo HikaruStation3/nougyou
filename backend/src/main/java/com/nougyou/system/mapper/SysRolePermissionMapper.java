@@ -29,6 +29,9 @@ public interface SysRolePermissionMapper {
     @Insert("INSERT IGNORE INTO sys_role_permission (role_id, permission_id) VALUES (#{roleId}, #{permissionId})")
     int insertOne(@Param("roleId") Long roleId, @Param("permissionId") Long permissionId);
 
+    @Delete("DELETE FROM sys_role_permission WHERE role_id = #{roleId} AND permission_id = #{permissionId}")
+    int deleteOne(@Param("roleId") Long roleId, @Param("permissionId") Long permissionId);
+
     @Delete("DELETE FROM sys_role_permission WHERE role_id = #{roleId}")
     int deleteByRoleId(@Param("roleId") Long roleId);
 }

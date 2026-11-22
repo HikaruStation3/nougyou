@@ -25,7 +25,10 @@ http.interceptors.response.use(
       if (body.code === "00000") {
         return body.data;
       }
-      ElMessage.error(body.msg || "请求失败");
+      // silent：后台轮询类请求（如购物车角标）失败时不打扰用户
+      if (!response.config?.silent) {
+        ElMessage.error(body.msg || "请求失败");
+      }
       return Promise.reject(new Error(body.msg || "请求失败"));
     }
     return body;
@@ -41,7 +44,9 @@ http.interceptors.response.use(
       }
       ElMessage.error(data?.msg || "登录已过期，请重新登录");
     } else {
-      ElMessage.error(data?.msg || error.message || "网络异常，请稍后重试");
+      if (!error.config?.silent) {
+        ElMessage.error(data?.msg || error.message || "网络异常，请稍后重试");
+      }
     }
     return Promise.reject(error);
   }

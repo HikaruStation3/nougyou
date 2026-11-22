@@ -102,12 +102,13 @@ const isFarmer = computed(() =>
 );
 
 async function loadCartCount() {
-  if (!store.isLoggedIn()) {
+  // 购物车仅对买家开放：未登录或农户商家直接跳过，避免无谓的 403 提示
+  if (!store.isLoggedIn() || isFarmer.value) {
     cartCount.value = 0;
     return;
   }
   try {
-    const items = await getCart();
+    const items = await getCart({ silent: true });
     cartCount.value = (items || []).reduce(
       (sum, item) => sum + (item.quantity || 0),
       0,

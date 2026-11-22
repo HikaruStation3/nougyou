@@ -97,7 +97,7 @@ public class DataInitializer implements ApplicationRunner {
     private static final List<String> FARMER_PERMISSION_CODES = List.of(
             "ai:chat:menu", "ai:chat:use",
             "file:upload:menu", "file:upload", "file:delete",
-            "product:view", "product:manage", "order:create", "order:manage",
+            "product:view", "order:create", "order:manage",
             "product:list", "product:detail", "product:my",
             "product:add", "product:edit", "product:shelf", "product:delete",
             "farmerApply:my",
@@ -138,6 +138,8 @@ public class DataInitializer implements ApplicationRunner {
         // 管理员始终拥有全部权限点，后续新增权限时会自动补齐
         ensurePermissions(adminRole, ALL_PERMISSION_CODES);
         ensurePermissions(farmerRole, FARMER_PERMISSION_CODES);
+        // 历史版本曾给农户授予 product:manage，会导致后台露出全平台商品与分类菜单，此处统一回收
+        revokePermissions(farmerRole, List.of("product:manage"));
         ensurePermissions(buyerRole, BUYER_PERMISSION_CODES);
 
         ensureUser("farmer01", "绿野农场店主", farmerRole.getId(), farm.getId());
@@ -272,6 +274,20 @@ public class DataInitializer implements ApplicationRunner {
                 .filter(Objects::nonNull)
                 .filter(permissionId -> !existingIds.contains(permissionId))
                 .forEach(permissionId -> rolePermissionMapper.insertOne(role.getId(), permissionId));
+    }
+
+    /**
+     * 回收角色上不再应该拥有的权限点，用于修正历史数据里多授的管理端权限。
+     */
+    private void revokePermissions(SysRole role, List<String> permissionCodes) {
+        Map<String, Long> permissionIds = permissionMapper.selectList(null).stream()
+                .collect(Collectors.toMap(SysPermission::getCode, SysPermission::getId, (a, b) -> a));
+        for (String code : permissionCodes) {
+            Long permissionId = permissionIds.get(code);
+            if (permissionId != null) {
+                rolePermissionMapper.deleteOne(role.getId(), permissionId);
+            }
+        }
     }
 
     private record PermissionSeed(String name, String code, String type, int sort) {

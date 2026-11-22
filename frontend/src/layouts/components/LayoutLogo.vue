@@ -2,7 +2,7 @@
   <div class="logo">
     <transition enter-active-class="animate__animated animate__fadeInLeft">
       <router-link :key="+collapse" class="wh-full flex-center" to="/">
-        <img :src="logo" class="w20px h20px" />
+        <img :src="logo" class="logo-img" />
         <span v-if="!collapse" class="title">
           {{ appConfig.title }}
         </span>
@@ -28,6 +28,15 @@ defineProps({
   width: 100%;
   height: $navbar-height;
   background-color: $sidebar-logo-background;
+
+  .logo-img {
+    display: block;
+    width: 26px;
+    height: 26px;
+    object-fit: cover;
+    border-radius: 7px;
+    box-shadow: 0 2px 6px rgba(16, 122, 84, 0.2);
+  }
 
   .title {
     flex-shrink: 0;

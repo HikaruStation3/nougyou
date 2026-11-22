@@ -4,7 +4,7 @@
       <section class="login-card">
         <div class="login-card__brand">
           <div class="login-card__logo-wrap">
-            <el-image :src="logo" class="login-card__logo" />
+            <el-image :src="logo" fit="cover" class="login-card__logo" />
           </div>
           <div class="login-card__meta">
             <div class="login-card__title-row">
@@ -267,13 +267,17 @@ onMounted(() => getCaptcha());
   justify-content: center;
   width: 46px;
   height: 46px;
+  overflow: hidden;
   background: var(--el-color-primary-light-9);
-  border-radius: 14px;
+  border-radius: 13px;
+  box-shadow: 0 4px 10px rgba(16, 122, 84, 0.18);
 }
 
 .login-card__logo {
-  width: 26px;
-  height: 26px;
+  display: block;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
 }
 
 .login-card__meta {

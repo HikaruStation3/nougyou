@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-side">
-        <span class="brand-logo large">N</span>
+        <img class="brand-logo large" src="/logo.png" alt="Nougyou" />
         <h2>加入 Nougyou</h2>
         <p>注册后即可使用 AI 助手、文件云存储等平台能力。</p>
       </div>

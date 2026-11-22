@@ -3,7 +3,7 @@
     <header class="portal-nav">
       <div class="nav-inner">
         <router-link to="/" class="brand">
-          <span class="brand-logo">N</span>
+          <img class="brand-logo" src="/logo.png" alt="Nougyou" />
           <span class="brand-name">Nougyou</span>
         </router-link>
 

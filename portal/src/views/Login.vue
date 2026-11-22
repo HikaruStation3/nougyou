@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-side">
-        <span class="brand-logo large">N</span>
+        <img class="brand-logo large" src="/logo.png" alt="Nougyou" />
         <h2>欢迎回来</h2>
         <p>登录 Nougyou 用户门户，管理你的账号与农业数据。</p>
       </div>

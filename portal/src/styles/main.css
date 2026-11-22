@@ -63,22 +63,19 @@ a {
 }
 
 .brand-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 32px;
   height: 32px;
-  color: #fff;
-  font-weight: 800;
-  background: linear-gradient(135deg, #2e9e5b, #1f7a48);
-  border-radius: 10px;
+  object-fit: cover;
+  border-radius: 9px;
+  box-shadow: 0 2px 6px rgba(46, 158, 91, 0.22);
 }
 
 .brand-logo.large {
   width: 46px;
   height: 46px;
-  font-size: 22px;
-  border-radius: 14px;
+  border-radius: 13px;
+  box-shadow: 0 4px 12px rgba(46, 158, 91, 0.25);
 }
 
 .nav-links {

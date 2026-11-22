@@ -17,17 +17,19 @@
             @select="handleCategorySelect"
           >
             <el-menu-item index="">全部分类</el-menu-item>
-            <template v-for="item in categories" :key="item.id">
+            <template v-for="item in visibleCategories" :key="item.id">
               <el-menu-item :index="item.id">
-                {{ item.name }}
+                <span class="cat-name">{{ item.name }}</span>
+                <span class="cat-count">{{ item.productCount }}</span>
               </el-menu-item>
               <el-menu-item
-                v-for="child in item.children || []"
+                v-for="child in item.children"
                 :key="child.id"
                 :index="child.id"
                 class="category-sub-item"
               >
-                {{ child.name }}
+                <span class="cat-name">{{ child.name }}</span>
+                <span class="cat-count">{{ child.productCount }}</span>
               </el-menu-item>
             </template>
           </el-menu>
@@ -182,7 +184,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { LocationFilled, Shop } from "@element-plus/icons-vue";
@@ -199,6 +201,21 @@ const loading = ref(false);
 const list = ref([]);
 const total = ref(0);
 const categories = ref([]);
+
+/**
+ * 只展示有在售商品的分类：二级分类为空会让买家点进去必然空列表，
+ * productCount 由后端按已上架商品统计，一级分类已包含子分类数量。
+ */
+const visibleCategories = computed(() =>
+  categories.value
+    .map((item) => ({
+      ...item,
+      children: (item.children || []).filter(
+        (child) => (child.productCount || 0) > 0
+      ),
+    }))
+    .filter((item) => (item.productCount || 0) > 0)
+);
 
 const query = reactive({
   pageNum: 1,
@@ -339,6 +356,19 @@ onMounted(() => {
   padding-left: 36px !important;
   font-size: 13px;
   color: var(--el-text-color-regular);
+}
+
+.cat-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-count {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 12px;
+  color: #8a9d92;
 }
 
 .product-main {

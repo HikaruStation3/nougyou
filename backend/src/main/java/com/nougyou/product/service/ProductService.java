@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class ProductService {
 
     /**
      * 返回一级 + 二级分类树；onlyEnabled 为 true 时只返回启用分类。
+     * productCount 只统计已上架商品，一级分类汇总其子分类，供买家端隐藏空分类。
      */
     public List<CategoryVO> categoryTree(Boolean onlyEnabled) {
         boolean enabledOnly = !Boolean.FALSE.equals(onlyEnabled);
@@ -63,23 +65,28 @@ public class ProductService {
                         .eq(enabledOnly, ProductCategory::getStatus, CATEGORY_ENABLED)
                         .orderByAsc(ProductCategory::getSort)
                         .orderByAsc(ProductCategory::getId));
-        return buildCategoryTree(categories);
+        return buildCategoryTree(categories, onShelfProductCounts());
     }
 
-    private List<CategoryVO> buildCategoryTree(List<ProductCategory> categories) {
+    private List<CategoryVO> buildCategoryTree(List<ProductCategory> categories, Map<Long, Long> counts) {
         Map<Long, List<ProductCategory>> childrenMap = categories.stream()
                 .filter(category -> category.getParentId() != null && !ROOT_PARENT_ID.equals(category.getParentId()))
                 .collect(Collectors.groupingBy(ProductCategory::getParentId));
         return categories.stream()
                 .filter(category -> category.getParentId() == null || ROOT_PARENT_ID.equals(category.getParentId()))
-                .map(root -> toCategoryVO(root, childrenMap))
+                .map(root -> toCategoryVO(root, childrenMap, counts))
                 .toList();
     }
 
-    private CategoryVO toCategoryVO(ProductCategory category, Map<Long, List<ProductCategory>> childrenMap) {
+    private CategoryVO toCategoryVO(ProductCategory category, Map<Long, List<ProductCategory>> childrenMap,
+                                    Map<Long, Long> counts) {
         List<CategoryVO> children = childrenMap.getOrDefault(category.getId(), List.of()).stream()
-                .map(child -> toCategoryVO(child, childrenMap))
+                .map(child -> toCategoryVO(child, childrenMap, counts))
                 .toList();
+        long ownCount = counts.getOrDefault(category.getId(), 0L);
+        long totalCount = ownCount + children.stream()
+                .mapToLong(child -> child.getProductCount() == null ? 0L : child.getProductCount())
+                .sum();
         return CategoryVO.builder()
                 .id(String.valueOf(category.getId()))
                 .name(category.getName())
@@ -87,8 +94,42 @@ public class ProductService {
                 .icon(category.getIcon())
                 .sort(category.getSort())
                 .status(category.getStatus())
+                .productCount((int) totalCount)
                 .children(children)
                 .build();
+    }
+
+    /**
+     * 按分类统计在售（已上架）商品数，未挂分类的商品不参与统计。
+     */
+    private Map<Long, Long> onShelfProductCounts() {
+        List<Map<String, Object>> rows = productMapper.selectMaps(
+                Wrappers.<Product>query()
+                        .select("category_id AS categoryId", "COUNT(*) AS total")
+                        .eq("shelf_status", SHELF_ON)
+                        .isNotNull("category_id")
+                        .groupBy("category_id"));
+        Map<Long, Long> counts = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            Object categoryId = mapValue(row, "categoryId");
+            Object total = mapValue(row, "total");
+            if (categoryId instanceof Number id && total instanceof Number count) {
+                counts.put(id.longValue(), count.longValue());
+            }
+        }
+        return counts;
+    }
+
+    /** 兼容不同 JDBC/MyBatis 版本返回的列名大小写。 */
+    private Object mapValue(Map<String, Object> row, String key) {
+        if (row.containsKey(key)) {
+            return row.get(key);
+        }
+        return row.entrySet().stream()
+                .filter(entry -> entry.getKey() != null && entry.getKey().equalsIgnoreCase(key))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     /* ============================================================
@@ -342,7 +383,7 @@ public class ProductService {
             category.setStatus(CATEGORY_ENABLED);
         }
         categoryMapper.insert(category);
-        return toCategoryVO(category, Map.of());
+        return toCategoryVO(category, Map.of(), Map.of());
     }
 
     /**
@@ -360,7 +401,7 @@ public class ProductService {
         applyCategoryForm(category, form);
         requireValidParent(category.getParentId(), id);
         categoryMapper.updateById(category);
-        return toCategoryVO(category, Map.of());
+        return toCategoryVO(category, Map.of(), Map.of());
     }
 
     /**

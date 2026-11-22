@@ -20,6 +20,8 @@ public class CategoryVO {
     private Integer sort;
     /** 状态：1 启用 / 0 禁用，管理端分类维护使用 */
     private Integer status;
+    /** 在售商品数；一级分类为其自身与全部子分类之和 */
+    private Integer productCount;
     /** 二级分类列表 */
     private List<CategoryVO> children;
 }

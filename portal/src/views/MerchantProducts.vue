@@ -195,14 +195,10 @@
                 <el-tree-select
                   v-model="form.categoryId"
                   :data="categoryOptions"
-                  :props="{
-                    value: 'value',
-                    label: 'name',
-                    children: 'children',
-                  }"
+                  :props="formCategoryProps"
                   node-key="id"
                   check-strictly
-                  placeholder="请选择分类"
+                  placeholder="请选择分类（末级）"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -385,6 +381,17 @@ function toTreeOptions(nodes) {
 }
 
 const categoryOptions = computed(() => toTreeOptions(categories.value));
+
+/**
+ * 上架/编辑时只允许选末级分类：商品挂在一级会导致其二级分类筛选不到商品。
+ * 查询条件仍可按一级筛选（后端会自动包含子分类）。
+ */
+const formCategoryProps = {
+  value: "value",
+  label: "name",
+  children: "children",
+  disabled: (data) => Array.isArray(data.children) && data.children.length > 0,
+};
 
 const query = reactive({
   pageNum: 1,

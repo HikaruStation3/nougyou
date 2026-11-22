@@ -13,14 +13,20 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  mvc:
+    async:
+      # SSE 流式对话为长连接，避免默认 30s 超时
+      request-timeout: 180000
   ai:
     openai:
-      # 任意 OpenAI 兼容服务均可：OpenAI / DeepSeek / 通义千问 / Ollama 等
-      api-key: ${OPENAI_API_KEY:sk-please-set-your-key}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      # 智谱 GLM 提供 OpenAI 兼容接口
+      api-key: ${GLM_API_KEY:这里填智谱ai的key}
+      base-url: ${GLM_BASE_URL:https://open.bigmodel.cn/api/paas/v4}
       chat:
+        # GLM 的对话路径为 /api/paas/v4/chat/completions
+        completions-path: /chat/completions
         options:
-          model: ${OPENAI_MODEL:gpt-4o-mini}
+          model: ${GLM_MODEL:glm-4-flash}
           temperature: 0.7
 
 mybatis-plus:
@@ -48,6 +54,15 @@ nougyou:
   captcha:
     # 登录是否校验图形验证码
     enabled: true
+  ai:
+    # AI 客服对话参数
+    model-name: ${GLM_MODEL:glm-4-flash}
+    # 携带的历史消息条数（一问一答算 2 条）
+    history-size: 10
+    # SSE 超时（毫秒）
+    timeout-ms: 180000
+    # 单次提问最大字数
+    max-question-length: 1000
 
 logging:
   level:

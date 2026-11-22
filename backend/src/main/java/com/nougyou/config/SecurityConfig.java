@@ -45,6 +45,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // SSE（SseEmitter）结束时 Servlet 容器会发起一次 ASYNC 分派，
+                        // 此时 JWT 过滤器不会二次执行，SecurityContext 只剩匿名身份，
+                        // 若再鉴权就会在响应已提交的情况下抛 403 并强行断开连接，
+                        // 前端 reader.read() 将永远等不到流结束（停止生成按钮不消失）。
+                        // 因此只对最初的 REQUEST 分派鉴权。
+                        .shouldFilterAllDispatcherTypes(false)
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/register",

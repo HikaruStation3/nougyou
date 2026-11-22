@@ -48,16 +48,33 @@ public class MenuController {
             systemMenus.add(route("project", "system/project/index", "Project",
                     "农家乐审核", "el-icon-Document", null, null));
         }
+        if (perms.contains("ai:adminSession")) {
+            systemMenus.add(route("ai-session", "ai/admin/session/index", "AiSessionMonitor",
+                    "AI 对话监控", "el-icon-ChatLineSquare", null, null));
+        }
+        if (perms.contains("ai:promptList")) {
+            systemMenus.add(route("ai-prompt", "ai/admin/prompt/index", "AiPromptConfig",
+                    "AI 提示词管理", "el-icon-EditPen", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",
                     "/system/" + redirect, systemMenus));
         }
+        // 农户商家侧：AI 对话 + 销量统计
+        List<Map<String, Object>> aiMenus = new ArrayList<>();
         if (perms.contains("ai:chat:menu")) {
-            Map<String, Object> aiMenu = route("chat", "ai/chat/index", "AiChat",
-                    "AI 对话", "el-icon-ChatDotRound", null, null);
+            aiMenus.add(route("chat", "ai/chat/index", "AiChat",
+                    "AI 对话", "el-icon-ChatDotRound", null, null));
+        }
+        if (perms.contains("ai:salesStat")) {
+            aiMenus.add(route("stat", "ai/stat/index", "AiSalesStat",
+                    "销量统计", "el-icon-DataAnalysis", null, null));
+        }
+        if (!aiMenus.isEmpty()) {
+            String redirect = String.valueOf(aiMenus.get(0).get("path"));
             routes.add(route("/ai", "Layout", "/ai", "AI 助手", "el-icon-ChatDotRound",
-                    "/ai/chat", List.of(aiMenu)));
+                    "/ai/" + redirect, aiMenus));
         }
         if (perms.contains("file:upload:menu")) {
             Map<String, Object> fileMenu = route("file", "demo/file/index", "FileDemo",

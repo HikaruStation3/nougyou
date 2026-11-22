@@ -903,7 +903,7 @@ INSERT INTO `ai_chat_message` (`session_id`,`msg_role`,`content`,`token_count`,`
 INSERT INTO `ai_prompt_config` (`scene_code`,`scene_name`,`prompt_content`,`version`,`is_enable`,`update_user_id`,`create_time`) VALUES
 ('BIZ_CONSULT','经营业务咨询','你是钟山镇扶贫助农平台的经营助手，只回答与本平台商品管理、订单处理、委托销售、售后流程相关的问题；不回答价格谈判、外部进货渠道、法律纠纷类问题；回答控制在150字以内，涉及操作路径须给出具体菜单名称。',1,1,7,'2026-09-01 10:00:00'),
 ('SALE_STAT','销售数据统计','根据系统提供的销量、销售额、退单量、库存数据生成简短统计结论。不得编造数据，数据缺失时必须明确说明缺什么，不得用行业均值替代。输出不超过120字。',1,1,7,'2026-09-01 10:05:00'),
-('SALE_ANALYSIS','销售可行性分析','结合近90天销量趋势与库存周转天数，判断该品类是否值得继续备货。输出结构固定为三行：结论、依据、建议动作。依据必须引用具体数字。',1,1,7,'2026-09-01 10:10:00'),
+('SALE_ANALYSIS','销售可行性分析','结合近90天销量趋势与库存周转天数，判断该品类是否值得继续备货。输出结构固定为三行：结论、依据、建议动作。依据必须引用具体数字。',1,0,7,'2026-09-01 10:10:00'),
 ('SALE_ANALYSIS','销售可行性分析','结合近90天销量趋势与库存周转天数，判断该品类是否值得继续备货。输出结构固定为三行：结论、依据、建议动作，依据必须引用具体数字；若库存周转超过60天，须明确提示压货风险。',2,1,8,'2026-10-15 14:00:00');
 
 /* ------------------ 19. AI 内容管控规则（FR-038） ------------------ */
@@ -913,6 +913,39 @@ INSERT INTO `ai_content_rule` (`rule_name`,`rule_type`,`keywords`,`action`,`rema
 ('联系方式外流拦截',2,'微信,加我,私聊,手机号是多少',2,'改写为引导站内下单或站内客服',1),
 ('外部渠道比价拦截',2,'哪里进货更便宜,批发市场,1688',3,'提示仅回答平台内经营问题',1),
 ('输出格式约束',3,'^.{0,}$',1,'单次回复不超过150字，禁止输出表格',1);
+
+/* ------------------ 20. AI 管理模块补充权限（FR-027 / FR-028 / FR-036 / FR-037） ------------------
+   农户商家：销量统计 + 可行性分析；管理员：对话监控 + 提示词版本管理
+   与 doc/ai_module_permissions.sql 内容一致，老库直接执行该脚本即可 */
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+SELECT id, '销量统计', 'ai:salesStat', 'MENU', 2 FROM `sys_permission` WHERE `code` = 'ai:chat:menu';
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+SELECT id, '销售可行性分析', 'ai:analysis', 'BUTTON', 1 FROM `sys_permission` WHERE `code` = 'ai:salesStat';
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+VALUES (0, 'AI 对话监控', 'ai:adminSession', 'MENU', 40);
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+SELECT id, 'AI 会话全文', 'ai:adminMessage', 'BUTTON', 1 FROM `sys_permission` WHERE `code` = 'ai:adminSession';
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+VALUES (0, 'AI 提示词管理', 'ai:promptList', 'MENU', 41);
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+SELECT id, '新增提示词版本', 'ai:promptAdd', 'BUTTON', 1 FROM `sys_permission` WHERE `code` = 'ai:promptList';
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`)
+SELECT id, '启用指定版本', 'ai:promptEnable', 'BUTTON', 2 FROM `sys_permission` WHERE `code` = 'ai:promptList';
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'ai:salesStat','ai:analysis','ai:adminSession','ai:adminMessage',
+  'ai:promptList','ai:promptAdd','ai:promptEnable'
+)
+WHERE r.`code` = 'ADMIN';
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN ('ai:salesStat','ai:analysis')
+WHERE r.`code` = 'FARMER';
 
 /* =================================================================
    初始化完成

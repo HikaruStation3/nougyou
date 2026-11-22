@@ -31,6 +31,15 @@
               >
             </div>
 
+            <el-alert
+              v-if="offShelf"
+              title="该商品已下架，暂时无法购买"
+              type="warning"
+              :closable="false"
+              show-icon
+              class="off-shelf-alert"
+            />
+
             <div class="price-row">
               <span class="price">￥{{ money(product.price) }}</span>
               <span class="unit">/ {{ product.unit || "件" }}</span>
@@ -69,7 +78,7 @@
                 type="primary"
                 :icon="ShoppingCart"
                 :loading="adding"
-                :disabled="maxQuantity < 1"
+                :disabled="maxQuantity < 1 || offShelf"
                 @click="handleAddToCart"
               >
                 加入购物车
@@ -77,13 +86,16 @@
               <el-button
                 type="warning"
                 plain
-                :disabled="maxQuantity < 1"
+                :disabled="maxQuantity < 1 || offShelf"
                 @click="handleBuyNow"
               >
                 立即购买
               </el-button>
             </div>
-            <div v-if="maxQuantity < 1" class="stock-warn">
+            <div v-if="offShelf" class="stock-warn">
+              该商品已下架，恢复上架后即可购买
+            </div>
+            <div v-else-if="maxQuantity < 1" class="stock-warn">
               商品库存不足，暂时无法购买
             </div>
           </div>
@@ -150,6 +162,9 @@ const maxQuantity = computed(() => {
   return Math.max(product.value.stock || 0, 0);
 });
 
+/** 商品被商家下架后，详情页仍可访问，但禁止购买 */
+const offShelf = computed(() => product.value?.shelfStatus === 0);
+
 async function loadDetail() {
   loading.value = true;
   try {
@@ -173,6 +188,10 @@ function requireLogin() {
 }
 
 async function handleAddToCart() {
+  if (offShelf.value) {
+    ElMessage.warning("该商品已下架，暂时无法购买");
+    return;
+  }
   if (!requireLogin()) return;
   adding.value = true;
   try {
@@ -185,6 +204,10 @@ async function handleAddToCart() {
 }
 
 async function handleBuyNow() {
+  if (offShelf.value) {
+    ElMessage.warning("该商品已下架，暂时无法购买");
+    return;
+  }
   if (!requireLogin()) return;
   adding.value = true;
   try {
@@ -200,6 +223,10 @@ onMounted(loadDetail);
 </script>
 
 <style scoped>
+.off-shelf-alert {
+  margin-bottom: 14px;
+}
+
 .detail-page {
   max-width: 1000px;
   margin: 0 auto;

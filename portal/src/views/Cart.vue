@@ -120,7 +120,11 @@
       <el-empty
         v-else-if="!loading"
         :description="
-          isFarmer ? '当前账号为农户商家，购物车仅对买家开放' : '购物车还是空的'
+          canUseCart
+            ? '购物车还是空的'
+            : isFarmer
+              ? '当前账号为农户商家，购物车仅对买家开放'
+              : '当前账号暂无购物车权限，请联系管理员分配'
         "
       >
         <el-button
@@ -203,13 +207,17 @@ const someSelected = computed(
     !allSelected.value && cartList.value.some((item) => item.selected === 1),
 );
 
-/** 农户商家没有购物车权限，直接展示提示，避免无谓的 403 请求 */
+/** 购物车按权限点判断，农户被授予 cart:list 后同样可用 */
 const isFarmer = computed(() =>
   (store.state.user?.roles || []).includes("FARMER"),
 );
+const canUseCart = computed(() => {
+  const perms = store.state.user?.perms || [];
+  return perms.length ? perms.includes("cart:list") : !isFarmer.value;
+});
 
 async function loadData() {
-  if (isFarmer.value) {
+  if (!canUseCart.value) {
     cartList.value = [];
     return;
   }

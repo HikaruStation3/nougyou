@@ -67,6 +67,36 @@ const routes = [
         meta: { title: "我的购物车", requiresAuth: true },
       },
       {
+        path: "checkout",
+        name: "checkout",
+        component: () => import("../views/Checkout.vue"),
+        meta: { title: "确认订单", requiresAuth: true },
+      },
+      {
+        path: "orders",
+        name: "orders",
+        component: () => import("../views/Orders.vue"),
+        meta: { title: "我的订单", requiresAuth: true },
+      },
+      {
+        path: "orders/:id",
+        name: "order-detail",
+        component: () => import("../views/OrderDetail.vue"),
+        meta: { title: "订单详情", requiresAuth: true },
+      },
+      {
+        path: "merchant/orders",
+        name: "merchant-orders",
+        component: () => import("../views/MerchantOrders.vue"),
+        meta: { title: "商家订单", requiresAuth: true, requiresFarmer: true },
+      },
+      {
+        path: "merchant/entrusts",
+        name: "merchant-entrusts",
+        component: () => import("../views/MerchantEntrusts.vue"),
+        meta: { title: "委托销售", requiresAuth: true, requiresFarmer: true },
+      },
+      {
         path: "profile",
         name: "profile",
         component: () => import("../views/Profile.vue"),

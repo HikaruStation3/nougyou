@@ -971,6 +971,56 @@ FROM `sys_role` r
 JOIN `sys_permission` p ON p.`code` IN ('ai:salesStat','ai:analysis')
 WHERE r.`code` = 'FARMER';
 
+/* ------------------ 21. 订单与委托销售补充权限（FR-006 / FR-007 / FR-018 / FR-022 ~ FR-025） ------------------
+   与后端 DataInitializer 保持一致；老库可直接执行本段补齐权限点。
+   管理端：订单查询 + 委托结算；商家端：商家订单、发货、委托销售；买家端：下单后的支付 / 取消 / 收货 */
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`) VALUES
+(0, '我的订单',      'order:list',       'BUTTON', 62),
+(0, '订单详情',      'order:detail',     'BUTTON', 63),
+(0, '支付订单',      'order:pay',        'BUTTON', 64),
+(0, '取消订单',      'order:cancel',     'BUTTON', 65),
+(0, '确认收货',      'order:confirm',    'BUTTON', 66),
+(0, '商家订单列表',  'order:farmerList', 'BUTTON', 67),
+(0, '订单发货',      'order:ship',       'BUTTON', 68),
+(0, '后台订单查询',  'order:adminList',  'BUTTON', 69),
+(0, '建立委托关系',  'entrust:add',      'BUTTON', 70),
+(0, '委托关系列表',  'entrust:list',     'BUTTON', 71),
+(0, '委托关系详情',  'entrust:detail',   'BUTTON', 72),
+(0, '确认委托',      'entrust:confirm',  'BUTTON', 73),
+(0, '终止委托',      'entrust:terminate','BUTTON', 74),
+(0, '委托销售统计',  'entrust:stat',     'BUTTON', 75),
+(0, '委托结算单',    'entrust:settlement','BUTTON', 76),
+(0, '生成结算单',    'entrust:settle',   'BUTTON', 77);
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'order:list','order:detail','order:pay','order:cancel','order:confirm',
+  'order:farmerList','order:ship','order:adminList',
+  'entrust:add','entrust:list','entrust:detail','entrust:confirm',
+  'entrust:terminate','entrust:stat','entrust:settlement','entrust:settle'
+)
+WHERE r.`code` = 'ADMIN';
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'order:detail','order:farmerList','order:ship',
+  'entrust:add','entrust:list','entrust:detail','entrust:confirm',
+  'entrust:terminate','entrust:stat','entrust:settlement'
+)
+WHERE r.`code` = 'FARMER';
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'order:list','order:detail','order:pay','order:cancel','order:confirm'
+)
+WHERE r.`code` = 'BUYER';
+
 /* =================================================================
    初始化完成
    -----------------------------------------------------------------

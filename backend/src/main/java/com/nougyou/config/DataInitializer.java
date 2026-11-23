@@ -87,7 +87,23 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("标记已读", "service:read", "BUTTON", 44),
             new PermissionSeed("客服工作台", "service:adminList", "MENU", 45),
             new PermissionSeed("客服接入会话", "service:accept", "BUTTON", 46),
-            new PermissionSeed("客服结束会话", "service:close", "BUTTON", 47)
+            new PermissionSeed("客服结束会话", "service:close", "BUTTON", 47),
+            new PermissionSeed("我的订单", "order:list", "BUTTON", 62),
+            new PermissionSeed("订单详情", "order:detail", "BUTTON", 63),
+            new PermissionSeed("支付订单", "order:pay", "BUTTON", 64),
+            new PermissionSeed("取消订单", "order:cancel", "BUTTON", 65),
+            new PermissionSeed("确认收货", "order:confirm", "BUTTON", 66),
+            new PermissionSeed("商家订单列表", "order:farmerList", "BUTTON", 67),
+            new PermissionSeed("订单发货", "order:ship", "BUTTON", 68),
+            new PermissionSeed("后台订单查询", "order:adminList", "BUTTON", 69),
+            new PermissionSeed("建立委托关系", "entrust:add", "BUTTON", 70),
+            new PermissionSeed("委托关系列表", "entrust:list", "BUTTON", 71),
+            new PermissionSeed("委托关系详情", "entrust:detail", "BUTTON", 72),
+            new PermissionSeed("确认委托", "entrust:confirm", "BUTTON", 73),
+            new PermissionSeed("终止委托", "entrust:terminate", "BUTTON", 74),
+            new PermissionSeed("委托销售统计", "entrust:stat", "BUTTON", 75),
+            new PermissionSeed("委托结算单", "entrust:settlement", "BUTTON", 76),
+            new PermissionSeed("生成结算单", "entrust:settle", "BUTTON", 77)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -100,6 +116,9 @@ public class DataInitializer implements ApplicationRunner {
             "product:view", "order:create", "order:manage",
             "product:list", "product:detail", "product:my",
             "product:add", "product:edit", "product:shelf", "product:delete",
+            "order:detail", "order:farmerList", "order:ship",
+            "entrust:add", "entrust:list", "entrust:detail", "entrust:confirm",
+            "entrust:terminate", "entrust:stat", "entrust:settlement",
             "farmerApply:my",
             "project:list", "project:detail",
             "project:add", "project:my", "project:edit", "project:shelf",
@@ -110,6 +129,7 @@ public class DataInitializer implements ApplicationRunner {
             "product:view", "order:create",
             "product:list", "product:detail",
             "cart:list", "cart:add", "cart:edit", "cart:delete", "cart:clear",
+            "order:list", "order:detail", "order:pay", "order:cancel", "order:confirm",
             "farmerApply:submit", "farmerApply:my",
             "project:list", "project:detail",
             "service:list", "service:create", "service:message", "service:send", "service:read"

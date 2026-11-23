@@ -54,6 +54,14 @@ public class MenuController {
             systemMenus.add(route("category", "system/category/index", "ProductCategory",
                     "农产品分类", "el-icon-Grid", null, null));
         }
+        if (perms.contains("order:adminList")) {
+            systemMenus.add(route("order", "system/order/index", "OrderQuery",
+                    "订单查询", "el-icon-List", null, null));
+        }
+        if (perms.contains("entrust:settle")) {
+            systemMenus.add(route("entrust", "system/entrust/index", "EntrustSettle",
+                    "委托结算", "el-icon-Money", null, null));
+        }
         if (perms.contains("ai:adminSession")) {
             systemMenus.add(route("ai-session", "ai/admin/session/index", "AiSessionMonitor",
                     "AI 对话监控", "el-icon-ChatLineSquare", null, null));

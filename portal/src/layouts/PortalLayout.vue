@@ -34,6 +34,9 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item v-if="canViewOrders" command="orders"
+                    >我的订单</el-dropdown-item
+                  >
                   <el-dropdown-item v-if="canUseCart" command="cart"
                     >我的购物车</el-dropdown-item
                   >
@@ -45,6 +48,12 @@
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant-products"
                     >我的农产品</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-orders"
+                    >商家订单</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-entrusts"
+                    >委托销售</el-dropdown-item
                   >
                   <el-dropdown-item command="profile"
                     >个人中心</el-dropdown-item
@@ -110,6 +119,12 @@ const canUseCart = computed(() => {
   return perms.length ? perms.includes("cart:list") : !isFarmer.value;
 });
 
+/** 我的订单入口按 order:list 权限显示，未返回 perms 的旧缓存按角色兜底 */
+const canViewOrders = computed(() => {
+  const perms = store.state.user?.perms || [];
+  return perms.length ? perms.includes("order:list") : !isFarmer.value;
+});
+
 async function loadCartCount() {
   // 无购物车权限（如农户商家）直接跳过，避免无谓的 403 提示
   if (!store.isLoggedIn() || !canUseCart.value) {
@@ -128,6 +143,10 @@ async function loadCartCount() {
 }
 
 async function handleCommand(command) {
+  if (command === "orders") {
+    router.push("/orders");
+    return;
+  }
   if (command === "cart") {
     if (canUseCart.value) router.push("/cart");
     return;
@@ -142,6 +161,14 @@ async function handleCommand(command) {
   }
   if (command === "merchant-products") {
     router.push("/merchant/products");
+    return;
+  }
+  if (command === "merchant-orders") {
+    router.push("/merchant/orders");
+    return;
+  }
+  if (command === "merchant-entrusts") {
+    router.push("/merchant/entrusts");
     return;
   }
   if (command === "profile") {

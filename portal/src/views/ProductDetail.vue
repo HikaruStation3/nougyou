@@ -209,14 +209,10 @@ async function handleBuyNow() {
     return;
   }
   if (!requireLogin()) return;
-  adding.value = true;
-  try {
-    await addToCart({ productId: product.value.id, quantity: quantity.value });
-    notifyCartChanged();
-    router.push("/cart");
-  } finally {
-    adding.value = false;
-  }
+  router.push({
+    path: "/checkout",
+    query: { productId: product.value.id, quantity: quantity.value },
+  });
 }
 
 onMounted(loadDetail);

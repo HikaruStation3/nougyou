@@ -316,7 +316,12 @@ async function handleClear() {
 }
 
 function handleCheckout() {
-  ElMessage.info("订单模块正在接入，请稍后再试");
+  const ids = selectedItems.value.map((item) => item.id);
+  if (!ids.length) {
+    ElMessage.warning("请先勾选要结算的商品");
+    return;
+  }
+  router.push({ path: "/checkout", query: { cartIds: ids.join(",") } });
 }
 
 onMounted(loadData);

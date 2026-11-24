@@ -1021,6 +1021,18 @@ JOIN `sys_permission` p ON p.`code` IN (
 )
 WHERE r.`code` = 'BUYER';
 
+/* ------------------ 22. 首页与工作台权限（FR-002 / FR-014） ------------------
+   首页聚合接口 /api/home 免登录；商家经营概览 /api/farmer/dashboard 需要 dashboard:view。
+   与后端 DataInitializer 保持一致。 */
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`) VALUES
+(0, '商家经营概览', 'dashboard:view', 'BUTTON', 78);
+
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` = 'dashboard:view'
+WHERE r.`code` IN ('ADMIN','FARMER');
+
 /* =================================================================
    初始化完成
    -----------------------------------------------------------------

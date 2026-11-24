@@ -150,6 +150,28 @@ public class ProductService {
     }
 
     /**
+     * 首页热销榜（API-111）：只取已上架商品，按累计销量倒序，最多 limit 条。
+     */
+    public List<ProductVO> hotList(int limit) {
+        int size = Math.max(1, Math.min(limit, 20));
+        List<Product> records = productMapper.selectList(Wrappers.<Product>lambdaQuery()
+                .eq(Product::getShelfStatus, SHELF_ON)
+                .orderByDesc(Product::getSaleCount)
+                .orderByDesc(Product::getId)
+                .last("LIMIT " + size));
+        if (records.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, String> categoryNames = categoryNames(
+                records.stream().map(Product::getCategoryId).toList());
+        Map<Long, FarmerInfo> farmerInfos = farmerInfos(
+                records.stream().map(Product::getFarmerId).toList());
+        return records.stream()
+                .map(product -> toVO(product, categoryNames, farmerInfos))
+                .toList();
+    }
+
+    /**
      * 商家自己的商品列表：包含已下架商品。
      */
     public PageResult<ProductVO> myPage(Long farmerId, ProductPageQuery query) {

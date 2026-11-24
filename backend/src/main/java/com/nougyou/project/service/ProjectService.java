@@ -63,6 +63,26 @@ public class ProjectService {
     }
 
     /**
+     * 首页推荐（API-111）：审核通过且上架的农家乐，按浏览量倒序，最多 limit 条。
+     */
+    public List<ProjectVO> recommendList(int limit) {
+        int size = Math.max(1, Math.min(limit, 20));
+        List<FarmProject> records = projectMapper.selectList(Wrappers.<FarmProject>lambdaQuery()
+                .eq(FarmProject::getProjectType, PROJECT_TYPE)
+                .eq(FarmProject::getAuditStatus, AUDIT_APPROVED)
+                .eq(FarmProject::getShelfStatus, SHELF_ON)
+                .orderByDesc(FarmProject::getViewCount)
+                .orderByDesc(FarmProject::getId)
+                .last("LIMIT " + size));
+        if (records.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, FarmerInfo> infoMap = farmerInfo(
+                records.stream().map(FarmProject::getFarmerId).toList());
+        return records.stream().map(project -> toVO(project, infoMap)).toList();
+    }
+
+    /**
      * API-034 公开详情：仅审核通过且已上架的项目可查看，并累加浏览量。
      */
     @Transactional

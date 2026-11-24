@@ -70,7 +70,10 @@ public class SecurityConfig {
                                 "/api/v1/products",
                                 "/api/v1/products/**",
                                 "/api/products",
-                                "/api/products/**"
+                                "/api/products/**",
+                                // 首页聚合数据：游客可匿名浏览政策、资讯、推荐项目与热销商品
+                                "/api/v1/home",
+                                "/api/home"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())

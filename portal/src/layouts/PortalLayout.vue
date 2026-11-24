@@ -11,6 +11,9 @@
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/projects" class="nav-link">农家乐项目</router-link>
           <router-link to="/products" class="nav-link">农产品商城</router-link>
+          <router-link v-if="isFarmer" to="/merchant/workbench" class="nav-link"
+            >商家工作台</router-link
+          >
           <router-link to="/consult" class="nav-link">我的咨询</router-link>
           <router-link to="/join" class="nav-link">加入我们</router-link>
           <router-link to="/profile" class="nav-link">个人中心</router-link>
@@ -42,6 +45,9 @@
                   >
                   <el-dropdown-item command="consult"
                     >我的咨询</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-workbench"
+                    >商家工作台</el-dropdown-item
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant"
                     >我的农家乐</el-dropdown-item
@@ -153,6 +159,10 @@ async function handleCommand(command) {
   }
   if (command === "consult") {
     router.push("/consult");
+    return;
+  }
+  if (command === "merchant-workbench") {
+    router.push("/merchant/workbench");
     return;
   }
   if (command === "merchant") {

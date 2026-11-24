@@ -85,6 +85,16 @@ const routes = [
         meta: { title: "订单详情", requiresAuth: true },
       },
       {
+        path: "merchant",
+        redirect: "/merchant/workbench",
+      },
+      {
+        path: "merchant/workbench",
+        name: "merchant-workbench",
+        component: () => import("../views/MerchantDashboard.vue"),
+        meta: { title: "商家工作台", requiresAuth: true, requiresFarmer: true },
+      },
+      {
         path: "merchant/orders",
         name: "merchant-orders",
         component: () => import("../views/MerchantOrders.vue"),

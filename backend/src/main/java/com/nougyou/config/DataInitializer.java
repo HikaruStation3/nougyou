@@ -103,7 +103,8 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("终止委托", "entrust:terminate", "BUTTON", 74),
             new PermissionSeed("委托销售统计", "entrust:stat", "BUTTON", 75),
             new PermissionSeed("委托结算单", "entrust:settlement", "BUTTON", 76),
-            new PermissionSeed("生成结算单", "entrust:settle", "BUTTON", 77)
+            new PermissionSeed("生成结算单", "entrust:settle", "BUTTON", 77),
+            new PermissionSeed("商家经营概览", "dashboard:view", "BUTTON", 78)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -119,6 +120,7 @@ public class DataInitializer implements ApplicationRunner {
             "order:detail", "order:farmerList", "order:ship",
             "entrust:add", "entrust:list", "entrust:detail", "entrust:confirm",
             "entrust:terminate", "entrust:stat", "entrust:settlement",
+            "dashboard:view",
             "farmerApply:my",
             "project:list", "project:detail",
             "project:add", "project:my", "project:edit", "project:shelf",

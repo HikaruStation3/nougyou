@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" width="720" height="1280">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6efe0"/>
+      <stop offset="1" stop-color="#d9b98a"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.42" r="0.78">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.18"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg)"/>
+  <path d="M-40 820 Q 180 750 400 810 T 760 770" fill="none" stroke="#b9863f" stroke-opacity="0.35" stroke-width="16"/><path d="M-40 900 Q 180 830 400 890 T 760 850" fill="none" stroke="#b9863f" stroke-opacity="0.30" stroke-width="14"/><path d="M-40 980 Q 180 910 400 970 T 760 930" fill="none" stroke="#b9863f" stroke-opacity="0.25" stroke-width="12"/><path d="M-40 1060 Q 180 990 400 1050 T 760 1010" fill="none" stroke="#b9863f" stroke-opacity="0.20" stroke-width="10"/><circle cx="540" cy="300" r="90" fill="#b9863f" fill-opacity="0.22"/>
+  <rect width="720" height="1280" fill="url(#vig)"/>
+  <text x="48" y="1216" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="30"
+        fill="#b9863f" fill-opacity="0.55" letter-spacing="6">NOUGYOU</text>
+</svg>

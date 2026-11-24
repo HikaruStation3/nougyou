@@ -73,7 +73,26 @@ public class SecurityConfig {
                                 "/api/products/**",
                                 // 首页聚合数据：游客可匿名浏览政策、资讯、推荐项目与热销商品
                                 "/api/v1/home",
-                                "/api/home"
+                                "/api/home",
+                                // 演示媒体与本地兜底存储：静态资源，供 <video> 直接访问
+                                "/api/v1/media/**",
+                                "/api/v1/files/local/**"
+                        ).permitAll()
+                        // 短视频与商家主页的只读接口对游客开放；点赞、评论、关注仍走鉴权
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/videos",
+                                "/api/v1/videos/*",
+                                "/api/v1/videos/*/comments",
+                                "/api/videos",
+                                "/api/videos/*",
+                                "/api/videos/*/comments",
+                                "/api/v1/farmers/*",
+                                "/api/farmers/*"
+                        ).permitAll()
+                        // 播放量上报是游客也会触发的埋点，不能要求登录，否则 401 会把游客踢回登录页
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/videos/*/view",
+                                "/api/videos/*/view"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())

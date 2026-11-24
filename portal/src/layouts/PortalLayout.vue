@@ -11,6 +11,7 @@
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/projects" class="nav-link">农家乐项目</router-link>
           <router-link to="/products" class="nav-link">农产品商城</router-link>
+          <router-link to="/videos" class="nav-link">助农短视频</router-link>
           <router-link v-if="isFarmer" to="/merchant/workbench" class="nav-link"
             >商家工作台</router-link
           >
@@ -54,6 +55,9 @@
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant-products"
                     >我的农产品</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-videos"
+                    >我的短视频</el-dropdown-item
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant-orders"
                     >商家订单</el-dropdown-item
@@ -171,6 +175,10 @@ async function handleCommand(command) {
   }
   if (command === "merchant-products") {
     router.push("/merchant/products");
+    return;
+  }
+  if (command === "merchant-videos") {
+    router.push("/merchant/videos");
     return;
   }
   if (command === "merchant-orders") {

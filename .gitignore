@@ -25,5 +25,8 @@ Thumbs.db
 .tmp_dump/
 verify_*.png
 
+# 本地上传兜底目录（MinIO 不可用时存放上传的视频与图片）
+uploads/
+
 # WorkBuddy 本地工作区数据
 .workbuddy/

@@ -11,8 +11,9 @@ spring:
     password: ${MYSQL_PASSWORD:123456}
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      # 短视频按接口文档限制 100MB（API-113），单请求略放宽以容纳表单字段
+      max-file-size: 100MB
+      max-request-size: 110MB
   mvc:
     async:
       # SSE 流式对话为长连接，避免默认 30s 超时
@@ -51,6 +52,9 @@ nougyou:
     secret: ${JWT_SECRET:nougyou-jwt-secret-key-change-me-0123456789abcdef}
     access-token-expire-minutes: 120
     refresh-token-expire-days: 7
+  file:
+    # MinIO 不可用时的本地兜底目录，由 MediaResourceConfig 映射为 /api/v1/files/local/**
+    local-dir: ${LOCAL_UPLOAD_DIR:./uploads}
   captcha:
     # 登录是否校验图形验证码
     enabled: true

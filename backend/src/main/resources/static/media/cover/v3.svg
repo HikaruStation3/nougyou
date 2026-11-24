@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" width="720" height="1280">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbe8cf"/>
+      <stop offset="1" stop-color="#c9762f"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.42" r="0.78">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.18"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg)"/>
+  <circle cx="360" cy="520" r="180" fill="#8d4a15" fill-opacity="0.20"/><circle cx="360" cy="520" r="110" fill="#8d4a15" fill-opacity="0.26"/><path d="M0 900 Q 180 860 360 900 T 720 880 L720 1280 L0 1280 Z" fill="#8d4a15" fill-opacity="0.30"/>
+  <rect width="720" height="1280" fill="url(#vig)"/>
+  <text x="48" y="1216" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="30"
+        fill="#8d4a15" fill-opacity="0.55" letter-spacing="6">NOUGYOU</text>
+</svg>

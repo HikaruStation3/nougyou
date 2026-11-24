@@ -852,13 +852,16 @@ INSERT INTO `service_message` (`session_id`,`sender_id`,`sender_role`,`content_t
 (4,4,'FARMER',1,'请问委托销售的结算规则在哪里看？',1,'2026-11-21 19:20:00');
 
 /* ------------------ 14. 短视频（FR-011 / FR-012 / FR-020 / FR-021 / FR-035） ------------------ */
+/* 演示素材：视频与封面放在 backend/src/main/resources/static/media 下，由 /api/v1/media/** 直接播放；
+   商家在门户上传的真实视频走 MinIO（不可用时落本地 uploads 目录）。 */
 INSERT INTO `video`
 (`id`,`farmer_id`,`title`,`cover`,`video_url`,`duration`,`description`,`audit_status`,`audit_user_id`,`audit_time`,`audit_remark`,`like_count`,`comment_count`,`view_count`,`publish_time`,`status`,`create_time`) VALUES
-(1,4,'兴化米粉手工制作全过程','/img/video/v1.jpg','/upload/video/v1.mp4',96,'从浸米、磨浆到上锅蒸、切丝、晒干，一双手做了三十年。',1,8,'2026-09-25 10:00:00','内容真实、无违规，通过',128,3,2150,'2026-09-25 10:05:00',1,'2026-09-24 20:10:00'),
-(2,5,'九鲤湖边的农家乐一日','/img/video/v2.jpg','/upload/video/v2.mp4',135,'带你看看我们家的农家菜、客房和后山果园。',1,8,'2026-10-08 09:20:00','通过',96,2,1780,'2026-10-08 09:30:00',1,'2026-10-07 18:40:00'),
-(3,6,'蔡伯的地瓜干为什么这么甜','/img/video/v3.jpg','/upload/video/v3.mp4',58,'三蒸三晒，不加一粒糖，甜是地瓜自己的甜。',1,8,'2026-10-22 15:40:00','审核通过；建议补充字幕便于年长用户观看',64,2,905,'2026-10-22 15:45:00',1,'2026-10-21 16:30:00'),
-(4,5,'山茶油开榨啦','/img/video/v4.jpg','/upload/video/v4.mp4',72,'今年第一批茶籽下榨，记录榨油全过程。',0,NULL,NULL,NULL,0,0,0,NULL,1,'2026-11-21 10:20:00'),
-(5,4,'米粉里吃出异物，别买别家','/img/video/v5.jpg','/upload/video/v5.mp4',30,'（标题含贬损同行表述）',2,8,'2026-11-10 11:00:00','标题与内容含贬损竞争对手表述，驳回修改后重新提交',0,0,0,NULL,0,'2026-11-09 21:00:00');
+(1,4,'兴化米粉手工制作全过程','/api/v1/media/cover/v1.svg','/api/v1/media/video/v1.mp4',10,'从浸米、磨浆到上锅蒸、切丝、晒干，一双手做了三十年。',1,8,'2026-09-25 10:00:00','内容真实、无违规，通过',128,3,2150,'2026-09-25 10:05:00',1,'2026-09-24 20:10:00'),
+(2,5,'九鲤湖边的农家乐一日','/api/v1/media/cover/v2.svg','/api/v1/media/video/v2.mp4',10,'带你看看我们家的农家菜、客房和后山果园。',1,8,'2026-10-08 09:20:00','通过',96,2,1780,'2026-10-08 09:30:00',1,'2026-10-07 18:40:00'),
+(3,6,'蔡伯的地瓜干为什么这么甜','/api/v1/media/cover/v3.svg','/api/v1/media/video/v3.mp4',5,'三蒸三晒，不加一粒糖，甜是地瓜自己的甜。',1,8,'2026-10-22 15:40:00','审核通过；建议补充字幕便于年长用户观看',64,2,905,'2026-10-22 15:45:00',1,'2026-10-21 16:30:00'),
+(4,5,'山茶油开榨啦','/api/v1/media/cover/v4.svg','/api/v1/media/video/v4.mp4',6,'今年第一批茶籽下榨，记录榨油全过程。',0,NULL,NULL,NULL,0,0,0,NULL,1,'2026-11-21 10:20:00'),
+(5,4,'米粉里吃出异物，别买别家','/api/v1/media/cover/v6.svg','/api/v1/media/video/v5.mp4',10,'（标题含贬损同行表述）',2,8,'2026-11-10 11:00:00','标题与内容含贬损竞争对手表述，驳回修改后重新提交',0,0,0,NULL,0,'2026-11-09 21:00:00'),
+(6,6,'村里的老屋和晒谷场','/api/v1/media/cover/v5.svg','/api/v1/media/video/v5.mp4',10,'太阳落山前，老屋前的晒谷场最热闹。',1,8,'2026-11-23 09:00:00','生活记录类内容，通过',12,1,268,'2026-11-23 09:10:00',1,'2026-11-22 18:00:00');
 
 INSERT INTO `video_like` (`video_id`,`user_id`,`create_time`) VALUES
 (1,1,'2026-09-26 08:10:00'),
@@ -867,7 +870,9 @@ INSERT INTO `video_like` (`video_id`,`user_id`,`create_time`) VALUES
 (2,1,'2026-10-09 09:15:00'),
 (2,3,'2026-10-10 20:40:00'),
 (3,2,'2026-10-23 10:00:00'),
-(3,9,'2026-10-24 11:20:00');
+(3,9,'2026-10-24 11:20:00'),
+(6,1,'2026-11-23 09:20:00'),
+(6,3,'2026-11-23 10:05:00');
 
 INSERT INTO `video_comment` (`video_id`,`user_id`,`parent_id`,`content`,`like_count`,`status`,`create_time`) VALUES
 (1,1,0,'看着就香，已经下单两袋了。',5,1,'2026-09-26 08:12:00'),
@@ -876,14 +881,16 @@ INSERT INTO `video_comment` (`video_id`,`user_id`,`parent_id`,`content`,`like_co
 (2,3,0,'国庆去过，卤面很好吃！',8,1,'2026-10-10 20:45:00'),
 (2,5,4,'谢谢！下次来提前说，给你留靠窗的位子。',1,1,'2026-10-10 21:10:00'),
 (3,2,0,'老人家手艺真好，已下单。',4,1,'2026-10-23 10:05:00'),
-(3,6,6,'谢谢，欢迎来西林村看看。',1,1,'2026-10-23 11:00:00');
+(3,6,6,'谢谢，欢迎来西林村看看。',1,1,'2026-10-23 11:00:00'),
+(6,1,0,'老屋真有味道，周末想带孩子去看看。',2,1,'2026-11-23 09:30:00');
 
 INSERT INTO `video_follow` (`user_id`,`farmer_id`,`create_time`) VALUES
 (1,4,'2026-09-26 08:11:00'),
 (1,5,'2026-10-09 09:16:00'),
 (3,5,'2026-10-10 20:41:00'),
 (2,4,'2026-10-23 10:06:00'),
-(9,6,'2026-10-24 11:21:00');
+(9,6,'2026-10-24 11:21:00'),
+(1,6,'2026-11-23 09:21:00');
 
 /* ------------------ 15. 委托销售关系（FR-022 / FR-023） ------------------ */
 /* 蔡建华(6) 识字不多、不便操作线上设备，委托吴国平(4)、郑秀兰(5) 代销地瓜干 */
@@ -1033,12 +1040,62 @@ FROM `sys_role` r
 JOIN `sys_permission` p ON p.`code` = 'dashboard:view'
 WHERE r.`code` IN ('ADMIN','FARMER');
 
+/* ------------------ 23. 短视频模块权限（FR-011 / FR-012 / FR-020 / FR-021 / FR-035） ------------------
+   观看类接口对游客开放，权限点用于区分「登录后可互动」与「商家发布 / 管理端审核」。
+   与后端 DataInitializer 保持一致，老库可直接执行本段补齐。 */
+INSERT IGNORE INTO `sys_permission` (`parent_id`,`name`,`code`,`type`,`sort`) VALUES
+(0, '助农短视频',        'video:list',          'MENU',   80),
+(0, '短视频详情',        'video:detail',        'BUTTON', 81),
+(0, '短视频点赞',        'video:like',          'BUTTON', 82),
+(0, '短视频评论列表',    'video:commentList',   'BUTTON', 83),
+(0, '发表短视频评论',    'video:comment',       'BUTTON', 84),
+(0, '删除短视频评论',    'video:commentDelete', 'BUTTON', 85),
+(0, '关注商家',          'video:follow',        'BUTTON', 86),
+(0, '商家主页',          'video:farmerProfile', 'BUTTON', 87),
+(0, '发布短视频',        'video:add',           'BUTTON', 88),
+(0, '我的短视频',        'video:my',            'BUTTON', 89),
+(0, '删除短视频',        'video:delete',        'BUTTON', 90),
+(0, '短视频列表(管理端)', 'video:adminList',     'BUTTON', 91),
+(0, '短视频审核',        'video:audit',         'BUTTON', 92);
+
+/* 管理员：全部 13 个权限点 */
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'video:list','video:detail','video:like','video:commentList','video:comment',
+  'video:commentDelete','video:follow','video:farmerProfile',
+  'video:add','video:my','video:delete','video:adminList','video:audit'
+)
+WHERE r.`code` = 'ADMIN';
+
+/* 农户商家：观看互动 + 发布 / 我的视频 / 删除 */
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'video:list','video:detail','video:like','video:commentList','video:comment',
+  'video:commentDelete','video:follow','video:farmerProfile',
+  'video:add','video:my','video:delete'
+)
+WHERE r.`code` = 'FARMER';
+
+/* 买家：观看与互动，不能发布 */
+INSERT IGNORE INTO `sys_role_permission` (`role_id`,`permission_id`)
+SELECT r.`id`, p.`id`
+FROM `sys_role` r
+JOIN `sys_permission` p ON p.`code` IN (
+  'video:list','video:detail','video:like','video:commentList','video:comment',
+  'video:commentDelete','video:follow','video:farmerProfile'
+)
+WHERE r.`code` = 'BUYER';
+
 /* =================================================================
    初始化完成
    -----------------------------------------------------------------
    数据规模：角色 3 / 用户 10 / 权限 37 / 入驻申请 5 / 政策 6
              资讯 6 / 农家乐 5 / 商品 10 / 订单 9 / 售后 4
-             客服会话 4+8 / 短视频 5 / 委托关系 3 / AI 会话 4+12
-             合计 244 行模拟数据
+             客服会话 4+8 / 短视频 6 / 委托关系 3 / AI 会话 4+12
+             合计 245 行模拟数据
    登录账号：buyer01~04、farmer01~03、admin01~02，密码均为 123456
    ================================================================= */

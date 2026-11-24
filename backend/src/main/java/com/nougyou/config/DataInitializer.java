@@ -104,7 +104,21 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("委托销售统计", "entrust:stat", "BUTTON", 75),
             new PermissionSeed("委托结算单", "entrust:settlement", "BUTTON", 76),
             new PermissionSeed("生成结算单", "entrust:settle", "BUTTON", 77),
-            new PermissionSeed("商家经营概览", "dashboard:view", "BUTTON", 78)
+            new PermissionSeed("商家经营概览", "dashboard:view", "BUTTON", 78),
+            // 短视频（FR-011 / FR-012 / FR-020 / FR-021 / FR-035）
+            new PermissionSeed("助农短视频", "video:list", "MENU", 80),
+            new PermissionSeed("短视频详情", "video:detail", "BUTTON", 81),
+            new PermissionSeed("短视频点赞", "video:like", "BUTTON", 82),
+            new PermissionSeed("短视频评论列表", "video:commentList", "BUTTON", 83),
+            new PermissionSeed("发表短视频评论", "video:comment", "BUTTON", 84),
+            new PermissionSeed("删除短视频评论", "video:commentDelete", "BUTTON", 85),
+            new PermissionSeed("关注商家", "video:follow", "BUTTON", 86),
+            new PermissionSeed("商家主页", "video:farmerProfile", "BUTTON", 87),
+            new PermissionSeed("发布短视频", "video:add", "BUTTON", 88),
+            new PermissionSeed("我的短视频", "video:my", "BUTTON", 89),
+            new PermissionSeed("删除短视频", "video:delete", "BUTTON", 90),
+            new PermissionSeed("短视频列表(管理端)", "video:adminList", "BUTTON", 91),
+            new PermissionSeed("短视频审核", "video:audit", "BUTTON", 92)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -124,7 +138,11 @@ public class DataInitializer implements ApplicationRunner {
             "farmerApply:my",
             "project:list", "project:detail",
             "project:add", "project:my", "project:edit", "project:shelf",
-            "service:list", "service:create", "service:message", "service:send", "service:read"
+            "service:list", "service:create", "service:message", "service:send", "service:read",
+            // 短视频：观看与互动 + 发布管理（FR-011 / FR-012 / FR-020 / FR-021）
+            "video:list", "video:detail", "video:like", "video:commentList",
+            "video:comment", "video:commentDelete", "video:follow", "video:farmerProfile",
+            "video:add", "video:my", "video:delete"
     );
 
     private static final List<String> BUYER_PERMISSION_CODES = List.of(
@@ -134,7 +152,10 @@ public class DataInitializer implements ApplicationRunner {
             "order:list", "order:detail", "order:pay", "order:cancel", "order:confirm",
             "farmerApply:submit", "farmerApply:my",
             "project:list", "project:detail",
-            "service:list", "service:create", "service:message", "service:send", "service:read"
+            "service:list", "service:create", "service:message", "service:send", "service:read",
+            // 短视频：买家以观看、点赞、评论、关注为主（FR-011 / FR-012）
+            "video:list", "video:detail", "video:like", "video:commentList",
+            "video:comment", "video:commentDelete", "video:follow", "video:farmerProfile"
     );
 
     private final SysDeptMapper deptMapper;

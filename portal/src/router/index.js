@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
+import { ElMessage } from "element-plus";
 import PortalLayout from "../layouts/PortalLayout.vue";
 
 const routes = [
@@ -124,7 +125,20 @@ const routes = [
         component: () => import("../views/MerchantProducts.vue"),
         meta: { title: "我的农产品", requiresAuth: true, requiresFarmer: true },
       },
+      {
+        path: "merchant/videos",
+        name: "merchant-videos",
+        component: () => import("../views/MerchantVideos.vue"),
+        meta: { title: "我的短视频", requiresAuth: true, requiresFarmer: true },
+      },
     ],
+  },
+  {
+    // 沉浸式播放页：不套 PortalLayout，整个视口交给短视频信息流
+    path: "/videos",
+    name: "videos",
+    component: () => import("../views/VideoFeed.vue"),
+    meta: { title: "助农短视频" },
   },
   {
     path: "/:pathMatch(.*)*",
@@ -154,11 +168,12 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !localStorage.getItem("portal_token")) {
     return { name: "login", query: { redirect: to.fullPath } };
   }
-  // 商家专属页面（如我的农产品）仅对农户商家开放，买家误入时回首页
+  // 商家专属页面（如我的农产品）仅对农户商家开放，买家误入时提示并回首页
   if (
     to.meta.requiresFarmer &&
     !(cachedUser()?.roles || []).includes("FARMER")
   ) {
+    ElMessage.warning("该页面仅对农户商家开放");
     return { name: "home" };
   }
   return true;

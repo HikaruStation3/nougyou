@@ -30,6 +30,12 @@
       </div>
     </header>
 
+    <!-- 带声自动播放被浏览器拦截时，给一个可点击的提示，避免用户以为视频没声音 -->
+    <button v-if="showSoundTip" class="sound-tip" type="button" @click="toggleMute">
+      <el-icon :size="15"><Mute /></el-icon>
+      <span>点击开启声音</span>
+    </button>
+
     <!-- 加载 / 空态 -->
     <div v-if="firstLoading" class="feed-placeholder">
       <el-icon class="is-loading" :size="30"><Loading /></el-icon>
@@ -424,7 +430,18 @@ const firstLoading = ref(true);
 const sortBy = ref("new");
 const activeIndex = ref(0);
 const playingIndex = ref(-1);
-const muted = ref(localStorage.getItem(MUTE_KEY) !== "0");
+/**
+ * 声音有两层状态，不能混用：
+ * - soundOn：用户的偏好（想不想听声音），只有点击喇叭时才会改变并写入 localStorage；
+ * - muted：当前实际的静音状态，带声自动播放被浏览器拦下时会临时变成 true，但不改偏好。
+ * 之前的实现只有 muted，被拦截后就把偏好一起改掉了，导致之后一直是静音。
+ */
+const soundOn = ref(localStorage.getItem(MUTE_KEY) !== "1");
+const muted = ref(!soundOn.value);
+/** 浏览器拦截过带声播放：用户随便点一下页面就应该恢复声音 */
+const audioBlocked = ref(false);
+const showSoundTip = ref(false);
+let soundTipTimer = null;
 const heartBeatId = ref(null);
 const progressMap = reactive({});
 
@@ -610,6 +627,14 @@ function setVideoEl(el, index) {
   }
 }
 
+function tipSound() {
+  showSoundTip.value = true;
+  clearTimeout(soundTipTimer);
+  soundTipTimer = setTimeout(() => {
+    showSoundTip.value = false;
+  }, 8000);
+}
+
 function playActive() {
   const index = activeIndex.value;
   const el = videoEls.value[index];
@@ -619,16 +644,28 @@ function playActive() {
     }
   });
   if (!el) return;
-  el.muted = muted.value;
+  el.muted = !soundOn.value;
   el.play()
     .then(() => {
       playingIndex.value = index;
+      muted.value = !soundOn.value;
+      if (soundOn.value) {
+        audioBlocked.value = false;
+        showSoundTip.value = false;
+      }
       markViewed(list.value[index]);
     })
     .catch(() => {
-      // 浏览器拦截带声音的自动播放：退化为静音播放
+      if (!soundOn.value) {
+        // 本来就该静音播放，还是失败说明是别的问题
+        playingIndex.value = -1;
+        return;
+      }
+      // 浏览器拦下了带声自动播放：先静音播出来，再提示用户点喇叭，偏好保持不变
       el.muted = true;
       muted.value = true;
+      audioBlocked.value = true;
+      tipSound();
       el.play()
         .then(() => {
           playingIndex.value = index;
@@ -637,6 +674,23 @@ function playActive() {
         .catch(() => {
           playingIndex.value = -1;
         });
+    });
+}
+
+/** 用户产生过手势后，重试带声播放（浏览器只在这种情况下放行） */
+function retrySound() {
+  if (!audioBlocked.value || !soundOn.value) return;
+  const el = videoEls.value[activeIndex.value];
+  if (!el) return;
+  el.muted = false;
+  el.play()
+    .then(() => {
+      muted.value = false;
+      audioBlocked.value = false;
+      showSoundTip.value = false;
+    })
+    .catch(() => {
+      el.muted = true;
     });
 }
 
@@ -670,11 +724,25 @@ function onPause(index) {
 }
 
 function toggleMute() {
-  muted.value = !muted.value;
-  localStorage.setItem(MUTE_KEY, muted.value ? "1" : "0");
+  // 以「当前实际是否静音」为基准：静音时点一下就是开声音，有声时点一下就是静音。
+  // 不能用 soundOn 取反——被浏览器拦截时 muted=true 而 soundOn 仍是 true，取反会误关声音。
+  const wantSound = muted.value;
+  soundOn.value = wantSound;
+  muted.value = !wantSound;
+  localStorage.setItem(MUTE_KEY, wantSound ? "0" : "1");
   videoEls.value.forEach((video) => {
-    if (video) video.muted = muted.value;
+    if (video) video.muted = !wantSound;
   });
+  showSoundTip.value = false;
+  audioBlocked.value = false;
+  if (wantSound) {
+    // 点击本身就是用户手势，可以直接带声播放
+    const el = videoEls.value[activeIndex.value];
+    if (el) {
+      el.muted = false;
+      el.play().catch(() => {});
+    }
+  }
 }
 
 function onLoadedMeta(event, item) {
@@ -958,6 +1026,14 @@ function initial(name) {
 
 /* ------------------------------ 生命周期 ------------------------------ */
 
+/** 用户点过页面之后，再试一次带声播放 */
+function unlockAudio() {
+  retrySound();
+  if (!audioBlocked.value) {
+    window.removeEventListener("pointerdown", unlockAudio);
+  }
+}
+
 function handleVisibility() {
   if (document.hidden) {
     videoEls.value.forEach((video) => video?.pause());
@@ -974,20 +1050,14 @@ onMounted(async () => {
   window.addEventListener("keydown", onKeydown);
   document.addEventListener("visibilitychange", handleVisibility);
   scrollerRef.value?.addEventListener("wheel", onWheel, { passive: false });
-  // 首次点击页面后尝试恢复声音（浏览器要求用户手势）
-  const unlockAudio = () => {
-    if (localStorage.getItem(MUTE_KEY) === "0") {
-      muted.value = false;
-      playActive();
-    }
-    window.removeEventListener("pointerdown", unlockAudio);
-  };
   window.addEventListener("pointerdown", unlockAudio);
 });
 
 onBeforeUnmount(() => {
   observer?.disconnect();
+  clearTimeout(soundTipTimer);
   window.removeEventListener("keydown", onKeydown);
+  window.removeEventListener("pointerdown", unlockAudio);
   document.removeEventListener("visibilitychange", handleVisibility);
   scrollerRef.value?.removeEventListener("wheel", onWheel);
   videoEls.value.forEach((video) => video?.pause());
@@ -1082,6 +1152,41 @@ onBeforeUnmount(() => {
 
 .publish-btn:hover {
   background: #257e48;
+}
+
+/* 声音提示：带声自动播放被拦时出现，点一下即可切换到有声播放 */
+.sound-tip {
+  position: absolute;
+  top: 66px;
+  right: 20px;
+  z-index: 21;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  animation: sound-tip-pulse 1.8s ease-in-out infinite;
+}
+
+.sound-tip:hover {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+@keyframes sound-tip-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0);
+  }
 }
 
 .feed-placeholder {

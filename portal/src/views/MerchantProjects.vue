@@ -146,7 +146,7 @@
             </el-col>
             <el-col :xs="24" :sm="12">
               <el-form-item label="封面图" prop="cover">
-                <el-input v-model="form.cover" placeholder="请输入封面图 URL" />
+                <SingleImageUpload v-model="form.cover" />
               </el-form-item>
             </el-col>
             <el-col :xs="24" :sm="12">
@@ -176,13 +176,8 @@
             </el-col>
             <el-col :span="24">
               <el-form-item label="环境图集">
-                <el-input
-                  v-model="imagesText"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="每行一张图片 URL，最多 9 张"
-                />
-                <div class="form-tip">每行填写一张图片地址，留空则不上传图集</div>
+                <MultiImageUpload v-model="form.images" :limit="9" />
+                <div class="form-tip">最多上传 9 张环境图片</div>
               </el-form-item>
             </el-col>
             <el-col :span="24">
@@ -228,6 +223,8 @@ import {
   shelfProject,
   updateProject
 } from "../api/project";
+import SingleImageUpload from "../components/SingleImageUpload.vue";
+import MultiImageUpload from "../components/MultiImageUpload.vue";
 import { useUserStore } from "../store/user";
 
 const router = useRouter();
@@ -241,7 +238,6 @@ const dialogVisible = ref(false);
 const formRef = ref();
 const isEdit = ref(false);
 const editingId = ref(null);
-const imagesText = ref("");
 
 const query = reactive({
   pageNum: 1,
@@ -253,6 +249,7 @@ const emptyForm = () => ({
   title: "",
   projectType: "农家乐",
   cover: "",
+  images: [],
   address: "",
   intro: "",
   priceDesc: "",
@@ -270,7 +267,7 @@ const rules = {
     { min: 5, max: 50, message: "项目名称长度需在 5-50 个字符之间", trigger: "blur" }
   ],
   projectType: [{ required: true, message: "请输入项目类型", trigger: "blur" }],
-  cover: [{ required: true, message: "请输入封面图地址", trigger: "blur" }],
+  cover: [{ required: true, message: "请上传封面图", trigger: "change" }],
   address: [{ required: true, message: "请输入项目地址", trigger: "blur" }],
   contactPhone: [
     { required: true, message: "请输入联系电话", trigger: "blur" },
@@ -317,19 +314,10 @@ function handleReset() {
   loadData();
 }
 
-function buildImages() {
-  return imagesText.value
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .slice(0, 9);
-}
-
 function openCreate() {
   isEdit.value = false;
   editingId.value = null;
   Object.assign(form, emptyForm());
-  imagesText.value = "";
   dialogVisible.value = true;
 }
 
@@ -340,6 +328,7 @@ function openEdit(row) {
     title: row.title || "",
     projectType: row.projectType || "农家乐",
     cover: row.cover || "",
+    images: Array.isArray(row.images) ? [...row.images] : [],
     address: row.address || "",
     intro: row.intro || "",
     priceDesc: row.priceDesc || "",
@@ -348,7 +337,6 @@ function openEdit(row) {
     businessHours: row.businessHours || "",
     resubmit: false
   });
-  imagesText.value = (row.images || []).join("\n");
   dialogVisible.value = true;
 }
 
@@ -358,7 +346,7 @@ async function handleSubmit() {
   } catch {
     return;
   }
-  const payload = { ...form, images: buildImages() };
+  const payload = { ...form };
   submitting.value = true;
   try {
     if (isEdit.value) {
@@ -396,7 +384,6 @@ async function handleShelf(row, val) {
 
 function resetForm() {
   Object.assign(form, emptyForm());
-  imagesText.value = "";
   formRef.value?.clearValidate();
 }
 

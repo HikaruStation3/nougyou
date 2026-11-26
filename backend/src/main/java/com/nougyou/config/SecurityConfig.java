@@ -74,6 +74,15 @@ public class SecurityConfig {
                                 // 首页聚合数据：游客可匿名浏览政策、资讯、推荐项目与热销商品
                                 "/api/v1/home",
                                 "/api/home",
+                                // 内容资讯：政策与资讯专栏对游客开放（API-021/022/027/028）
+                                "/api/v1/policies",
+                                "/api/v1/policies/**",
+                                "/api/policies",
+                                "/api/policies/**",
+                                "/api/v1/news",
+                                "/api/v1/news/**",
+                                "/api/news",
+                                "/api/news/**",
                                 // 演示媒体与本地兜底存储：静态资源，供 <video> 直接访问
                                 "/api/v1/media/**",
                                 "/api/v1/files/local/**"

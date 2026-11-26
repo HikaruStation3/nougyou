@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -40,6 +41,18 @@ public class GlobalExceptionHandler {
         // 静态资源/未实现的接口按 404 返回，避免被统一异常兜底成 500
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.fail(ResultCode.NOT_FOUND, "接口不存在"));
+    }
+
+    /**
+     * 路径/查询参数类型不对（如 /entrusts/undefined/settlements）属于客户端问题，
+     * 单独按 400 返回，避免被下面的 Exception 兜底成“系统异常”，掩盖真实原因。
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = "参数 " + ex.getName() + " 格式不正确";
+        log.warn("参数类型不匹配: {} = {}", ex.getName(), ex.getValue());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.fail(ResultCode.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(Exception.class)

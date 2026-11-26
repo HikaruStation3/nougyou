@@ -118,7 +118,14 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("我的短视频", "video:my", "BUTTON", 89),
             new PermissionSeed("删除短视频", "video:delete", "BUTTON", 90),
             new PermissionSeed("短视频列表(管理端)", "video:adminList", "BUTTON", 91),
-            new PermissionSeed("短视频审核", "video:audit", "BUTTON", 92)
+            new PermissionSeed("短视频审核", "video:audit", "BUTTON", 92),
+            // 通知公告：管理员发布，全站用户在顶部铃铛与「我的通知」接收
+            new PermissionSeed("通知公告", "sys:notice:menu", "MENU", 93),
+            new PermissionSeed("新增通知", "sys:notice:create", "BUTTON", 94),
+            new PermissionSeed("编辑通知", "sys:notice:update", "BUTTON", 95),
+            new PermissionSeed("删除通知", "sys:notice:delete", "BUTTON", 96),
+            new PermissionSeed("发布通知", "sys:notice:publish", "BUTTON", 97),
+            new PermissionSeed("撤回通知", "sys:notice:revoke", "BUTTON", 98)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()

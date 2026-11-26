@@ -24,7 +24,16 @@ public class DictController {
                     item(2, "女", "danger")),
             "status", List.of(
                     item(1, "启用", "success"),
-                    item(0, "禁用", "info"))
+                    item(0, "禁用", "info")),
+            // 通知公告：类型 / 等级，与 notice 表注释一致
+            "notice_type", List.of(
+                    item(1, "通知", "primary"),
+                    item(2, "公告", "success"),
+                    item(3, "提醒", "warning")),
+            "notice_level", List.of(
+                    item("L", "普通", "info"),
+                    item("M", "重要", "warning"),
+                    item("H", "紧急", "danger"))
     );
 
     @GetMapping("/{dictCode}/items/options")
@@ -33,6 +42,14 @@ public class DictController {
     }
 
     private static Map<String, Object> item(int value, String label, String tagType) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("value", value);
+        item.put("label", label);
+        item.put("tagType", tagType);
+        return item;
+    }
+
+    private static Map<String, Object> item(String value, String label, String tagType) {
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("value", value);
         item.put("label", label);

@@ -78,6 +78,10 @@ public class MenuController {
             systemMenus.add(route("video", "system/video/index", "VideoAudit",
                     "短视频审核", "el-icon-VideoCamera", null, null));
         }
+        if (perms.contains("sys:notice:menu")) {
+            systemMenus.add(route("notice", "system/notice/index", "Notice",
+                    "通知公告", "el-icon-Bell", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",

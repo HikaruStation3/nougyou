@@ -68,6 +68,24 @@ nougyou:
     # 单次提问最大字数
     max-question-length: 1000
 
+alipay:
+  # 支付宝沙箱（电脑网站支付）。三个密钥填齐并置 enabled: true 后，
+  # 订单页才会出现「支付宝沙箱」入口；否则只保留模拟支付，不影响其它功能演示。
+  enabled: false
+  sandbox: true
+  gateway: ${ALIPAY_GATEWAY:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
+  # 沙箱应用 APPID，形如 9021000xxx（开放平台 → 控制台 → 沙箱）
+  app-id: ${ALIPAY_APP_ID:}
+  # 应用私钥：支付宝密钥工具生成的 PKCS8 单行 Base64
+  private-key: ${ALIPAY_PRIVATE_KEY:}
+  # 支付宝公钥：沙箱应用页里的「支付宝公钥」，不是应用公钥
+  alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+  # 异步通知需公网可达；本机开发填 localhost 不会被调用，靠前端跳回后主动查单兜底
+  notify-url: ${ALIPAY_NOTIFY_URL:http://localhost:8080/api/v1/pay/alipay/notify}
+  # 同步跳转由浏览器发起，填本机前端地址即可
+  return-url: ${ALIPAY_RETURN_URL:http://localhost:3100/#/pay/result}
+  subject-prefix: 钟山镇扶贫助农-
+
 logging:
   level:
     com.nougyou: info

@@ -85,7 +85,13 @@ public class SecurityConfig {
                                 "/api/news/**",
                                 // 演示媒体与本地兜底存储：静态资源，供 <video> 直接访问
                                 "/api/v1/media/**",
-                                "/api/v1/files/local/**"
+                                "/api/v1/files/local/**",
+                                // 支付宝沙箱：notify 由支付宝服务器回调（不带 JWT），
+                                // config 供前端探测「是否已配置密钥」，两者都不能要求登录
+                                "/api/v1/pay/alipay/notify",
+                                "/api/pay/alipay/notify",
+                                "/api/v1/pay/alipay/config",
+                                "/api/pay/alipay/config"
                         ).permitAll()
                         // 短视频与商家主页的只读接口对游客开放；点赞、评论、关注仍走鉴权
                         .requestMatchers(HttpMethod.GET,

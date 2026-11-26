@@ -58,6 +58,8 @@ public class OrderService {
 
     private static final int PAY_UNPAID = 0;
     private static final int PAY_PAID = 1;
+    /** 支付方式：1 微信 / 2 支付宝 / 3 模拟支付 */
+    private static final int PAY_TYPE_ALIPAY = 2;
     private static final int STATUS_UNPAID = 0;
     private static final int STATUS_UNSHIPPED = 1;
     private static final int STATUS_UNRECEIVED = 2;
@@ -361,6 +363,67 @@ public class OrderService {
         return detail(buyerId, id);
     }
 
+    /** 支付宝下单前校验：必须是本人的待付款订单，避免拿别人的订单号生成收银台链接 */
+    public Order requirePayableOrder(Long buyerId, Long id) {
+        Order order = requireBuyerOrder(buyerId, id);
+        if (!Integer.valueOf(PAY_UNPAID).equals(order.getPayStatus())
+                || !Integer.valueOf(STATUS_UNPAID).equals(order.getOrderStatus())) {
+            throw new BusinessException("该订单当前状态不可支付");
+        }
+        return order;
+    }
+
+    /** 按订单号查询，支付宝回跳只带 out_trade_no，需要按单号找回本地订单 */
+    public Order findByOrderNo(String orderNo) {
+        Order order = orderMapper.selectOne(Wrappers.<Order>lambdaQuery()
+                .eq(Order::getOrderNo, orderNo)
+                .last("limit 1"));
+        if (order == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "订单不存在");
+        }
+        return order;
+    }
+
+    /**
+     * 支付宝支付成功回写，异步通知与主动查单共用。
+     * <p>
+     * 用「带状态条件的更新」保证幂等：支付宝可能重复通知，查单也可能被前端轮询多次，
+     * 只有第一次 {@code pay_status=0} 的更新会生效，后续调用直接返回当前订单。
+     *
+     * @param paidAmount 支付宝回传的实付金额，用于和订单应付金额比对，传 null 表示不校验
+     */
+    @Transactional
+    public Order markPaidByAlipay(Long orderId, String tradeNo, BigDecimal paidAmount) {
+        Order order = requireOrder(orderId);
+        if (Integer.valueOf(PAY_PAID).equals(order.getPayStatus())) {
+            return order;
+        }
+        if (!Integer.valueOf(STATUS_UNPAID).equals(order.getOrderStatus())) {
+            throw new BusinessException("订单当前状态不可支付");
+        }
+        BigDecimal expected = order.getPayAmount() == null ? BigDecimal.ZERO : order.getPayAmount();
+        if (paidAmount != null && paidAmount.compareTo(expected) != 0) {
+            throw new BusinessException("支付金额与订单应付金额不一致");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        int rows = orderMapper.update(null, Wrappers.<Order>lambdaUpdate()
+                .eq(Order::getId, orderId)
+                .eq(Order::getPayStatus, PAY_UNPAID)
+                .set(Order::getPayStatus, PAY_PAID)
+                .set(Order::getPayType, PAY_TYPE_ALIPAY)
+                .set(Order::getTradeNo, tradeNo)
+                .set(Order::getPayTime, now)
+                .set(Order::getOrderStatus, STATUS_UNSHIPPED)
+                .set(Order::getUpdateTime, now));
+        if (rows == 0) {
+            // 并发下已被另一次通知处理，按已支付返回
+            return requireOrder(orderId);
+        }
+        log.info("支付宝支付成功：订单 {}，支付宝交易号 {}", order.getOrderNo(), tradeNo);
+        return requireOrder(orderId);
+    }
+
     /**
      * API-056 取消订单：仅待付款可取消，取消后回滚库存。
      */
@@ -511,6 +574,7 @@ public class OrderService {
                     .payStatus(order.getPayStatus())
                     .payType(order.getPayType())
                     .payTime(order.getPayTime())
+                    .tradeNo(order.getTradeNo())
                     .orderStatus(order.getOrderStatus())
                     .receiverName(order.getReceiverName())
                     .receiverPhone(maskPhone ? maskPhone(order.getReceiverPhone()) : order.getReceiverPhone())

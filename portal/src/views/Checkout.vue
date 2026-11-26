@@ -60,11 +60,13 @@
           </el-form-item>
           <el-form-item label="支付方式">
             <el-radio-group v-model="form.payType">
+              <el-radio :value="2">支付宝（沙箱）</el-radio>
               <el-radio :value="3">模拟支付</el-radio>
-              <el-radio :value="1">微信支付</el-radio>
-              <el-radio :value="2">支付宝</el-radio>
             </el-radio-group>
-            <div class="form-tip">本项目未接入真实支付，提交后可在订单列表完成模拟支付。</div>
+            <div class="form-tip">
+              提交后在订单页完成支付：选支付宝会跳转沙箱收银台，用虚拟买家账号付款；
+              选模拟支付则直接把订单标记为已支付。
+            </div>
           </el-form-item>
         </el-form>
 
@@ -112,7 +114,8 @@ const form = reactive({
   receiverPhone: store.state.user?.mobile || "",
   receiverAddress: "",
   remark: "",
-  payType: 3,
+  // 2 支付宝（沙箱）/ 3 模拟支付；默认让用户走真实一点的沙箱链路
+  payType: 2,
 });
 
 const totalAmount = computed(() =>

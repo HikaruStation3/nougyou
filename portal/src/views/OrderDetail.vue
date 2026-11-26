@@ -44,6 +44,9 @@
             {{ PAY_TYPE[order.payType] || "-" }}
           </el-descriptions-item>
           <el-descriptions-item label="支付时间">{{ order.payTime || "-" }}</el-descriptions-item>
+          <el-descriptions-item v-if="order.tradeNo" label="支付宝交易号" :span="2">
+            {{ order.tradeNo }}
+          </el-descriptions-item>
           <el-descriptions-item label="收货人">{{ order.receiverName }}</el-descriptions-item>
           <el-descriptions-item label="联系电话">{{ order.receiverPhone }}</el-descriptions-item>
           <el-descriptions-item label="收货地址" :span="2">
@@ -111,6 +114,7 @@ import { ArrowLeft } from "@element-plus/icons-vue";
 import { cancelOrder, confirmOrder, getOrder, payOrder } from "../api/order";
 import { money } from "../utils/format";
 import { orderStatusText, PAY_STATUS, PAY_TYPE } from "../utils/order";
+import { choosePayChannel, gotoAlipayCashier } from "../utils/alipay";
 import { useUserStore } from "../store/user";
 
 const route = useRoute();
@@ -136,13 +140,13 @@ async function loadDetail() {
 }
 
 async function handlePay() {
-  try {
-    await ElMessageBox.confirm(
-      `确认支付 ￥${money(order.value.payAmount)}？`,
-      "模拟支付",
-      { type: "info", confirmButtonText: "确认支付" },
-    );
-  } catch {
+  const channel = await choosePayChannel(order.value, money(order.value.payAmount));
+  if (!channel) {
+    return;
+  }
+  // 支付宝：整页跳转到沙箱收银台，付款后由 return_url 跳回 /pay/result
+  if (channel === "alipay") {
+    await gotoAlipayCashier(order.value);
     return;
   }
   await payOrder(order.value.id, { payType: 3 });

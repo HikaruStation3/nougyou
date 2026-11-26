@@ -118,6 +118,7 @@ import {
 } from "../api/order";
 import { money } from "../utils/format";
 import { orderStatusTag, orderStatusText } from "../utils/order";
+import { choosePayChannel, gotoAlipayCashier } from "../utils/alipay";
 
 const route = useRoute();
 const router = useRouter();
@@ -174,13 +175,12 @@ function goDetail(order) {
 }
 
 async function handlePay(order) {
-  try {
-    await ElMessageBox.confirm(
-      `确认支付订单 ${order.orderNo}，金额 ￥${money(order.payAmount)}？`,
-      "模拟支付",
-      { type: "info", confirmButtonText: "确认支付" },
-    );
-  } catch {
+  const channel = await choosePayChannel(order, money(order.payAmount));
+  if (!channel) {
+    return;
+  }
+  if (channel === "alipay") {
+    await gotoAlipayCashier(order);
     return;
   }
   await payOrder(order.id, { payType: 3 });

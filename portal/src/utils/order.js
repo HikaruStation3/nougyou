@@ -19,7 +19,7 @@ export const PAY_STATUS = {
 
 export const PAY_TYPE = {
   1: "微信支付",
-  2: "支付宝",
+  2: "支付宝（沙箱）",
   3: "模拟支付",
 };
 

@@ -300,6 +300,42 @@ Content-Type: application/json
 
 > 管理员虽然拥有 `order:pay` 权限点，但数据归属校验会拦下：`A0400 无权操作他人的订单`。
 
+### 4.1 支付宝沙箱支付（可选）
+
+上面测的是模拟支付。要看**真实支付链路**，得先按 `doc/alipay_sandbox.md` 填好沙箱的
+`app-id` / `private-key` / `alipay-public-key` 并把 `alipay.enabled` 打开，重启后端。
+
+**自检配置**
+
+```bash
+curl http://localhost:8080/api/v1/pay/alipay/config
+# 期望 data.ready = true，data.missing = ""
+```
+
+**四个接口**
+
+| 方法 | 路径 | 鉴权 | 期望 |
+|---|---|---|---|
+| GET | `/api/v1/pay/alipay/config` | 否 | `00000`，`ready` 反映配置状态 |
+| GET | `/api/v1/pay/alipay/page?orderId={{id}}` | 买家 | `00000`，`payUrl` 指向沙箱网关，含 `sign` |
+| GET | `/api/v1/pay/alipay/query?orderNo={{no}}` | 买家 | `00000`，未付 `paid=false`，付完 `paid=true` |
+| POST | `/api/v1/pay/alipay/notify` | 否 | 纯文本 `success` / `failure` |
+
+**必须核对的结果**
+
+1. `/page` 返回的 `payUrl` 里 `method=alipay.trade.page.pay`、`sign_type=RSA2`、
+   `biz_content` 里的 `out_trade_no` 与订单号一致、`total_amount` 与 `payAmount` 一致。
+2. 拿**别人的**订单 id 调 `/page` → `A0400 无权操作他人的订单`；不带 Token → `401`。
+3. 未配置密钥时调 `/page` → `A0400 支付宝支付未启用…`（不是 500）。
+4. 订单已支付后再调 `/query` → 直接返回 `paid=true` 并带上 `tradeNo`，不再请求支付宝。
+5. 已支付订单再发异步通知 → 仍返回 `success`，`pay_time` 不变（幂等）。
+6. 通知里的 `total_amount` 与订单不符 → 返回 `failure`，订单状态不变。
+7. 用错误的密钥签名通知 → 返回 `failure`，订单状态不变。
+8. 支付成功后 `pay_type` 落为 `2`（支付宝），`orders.trade_no` 有值。
+
+**本地无公网怎么测**：`notify_url` 打不进来是正常的，主链路走
+「浏览器跳回 return_url → 前端调 `/query` 主动查单」，见 `doc/alipay_sandbox.md` 第 6 节。
+
 ---
 
 ## 5. API-056 取消订单

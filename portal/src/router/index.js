@@ -110,6 +110,13 @@ const routes = [
         meta: { title: "订单详情", requiresAuth: true },
       },
       {
+        // 支付宝沙箱同步跳转落地页，return_url 配的就是这个地址
+        path: "pay/result",
+        name: "pay-result",
+        component: () => import("../views/PayResult.vue"),
+        meta: { title: "支付结果", requiresAuth: true },
+      },
+      {
         path: "merchant",
         redirect: "/merchant/workbench",
       },

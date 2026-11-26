@@ -31,6 +31,8 @@ public class OrderVO {
     private Integer payType;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime payTime;
+    /** 支付宝交易号，模拟支付为空 */
+    private String tradeNo;
     /** 0 待付款 / 1 待发货 / 2 待收货 / 3 已完成 / 4 已取消 / 5 售后中 */
     private Integer orderStatus;
     private String receiverName;

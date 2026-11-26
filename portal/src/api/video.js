@@ -67,21 +67,5 @@ export function deleteVideo(id) {
   return http.delete(`/farmer/videos/${id}`);
 }
 
-/**
- * 上传文件（视频 / 封面），统一走 /files，返回 { name, url, objectName }。
- * @param {File} file 文件
- * @param {(percent:number)=>void} onProgress 上传进度回调
- */
-export function uploadFile(file, onProgress) {
-  const formData = new FormData();
-  formData.append("file", file);
-  return http.post("/files", formData, {
-    timeout: 0,
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: (event) => {
-      if (onProgress && event.total) {
-        onProgress(Math.round((event.loaded * 100) / event.total));
-      }
-    },
-  });
-}
+// 视频与封面统一走文件上传接口（API-113），保留原有导出名
+export { uploadFile } from "./file";

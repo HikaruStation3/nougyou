@@ -94,7 +94,7 @@
             <input
               ref="fileInputRef"
               type="file"
-              accept="video/mp4,video/*"
+              accept="video/mp4,.mp4"
               class="file-input"
               @change="handleFileChange"
             />
@@ -301,6 +301,11 @@ function handleFileChange(event) {
     event.target.value = "";
     return;
   }
+  if (!file.name.toLowerCase().endsWith(".mp4")) {
+    ElMessage.warning("平台仅支持 mp4 格式的视频");
+    event.target.value = "";
+    return;
+  }
   if (file.size > 100 * 1024 * 1024) {
     ElMessage.warning("视频不能超过 100MB");
     event.target.value = "";
@@ -382,13 +387,13 @@ async function handleSubmit() {
   uploadPercent.value = 0;
   try {
     // 1. 上传视频
-    const videoFile = await uploadFile(fileInfo.file, (percent) => {
+    const videoFile = await uploadFile(fileInfo.file, "video", (percent) => {
       uploadPercent.value = Math.round(percent * 0.8);
     });
     // 2. 上传封面（canvas 截图转成文件）
     const coverBlob = await (await fetch(form.cover)).blob();
     const coverFile = new File([coverBlob], "cover.jpg", { type: "image/jpeg" });
-    const coverResult = await uploadFile(coverFile, (percent) => {
+    const coverResult = await uploadFile(coverFile, "product", (percent) => {
       uploadPercent.value = 80 + Math.round(percent * 0.2);
     });
     // 3. 提交审核

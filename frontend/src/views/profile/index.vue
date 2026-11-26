@@ -678,7 +678,7 @@ const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files ? target.files[0] : null;
   if (file) {
-    const data = await FileAPI.uploadFile(file);
+    const data = await FileAPI.uploadWithBizType(file, "avatar");
     await UserAPI.updateProfile({
       avatar: data.url,
     });

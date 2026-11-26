@@ -9,9 +9,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -51,6 +54,30 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         String message = "参数 " + ex.getName() + " 格式不正确";
         log.warn("参数类型不匹配: {} = {}", ex.getName(), ex.getValue());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.fail(ResultCode.BAD_REQUEST, message));
+    }
+
+    /**
+     * 上传文件超过 multipart 上限（100MB）时，Spring 在进入 Controller 前就抛出异常，
+     * 这里返回业务提示，避免前端只看到「系统异常」。
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        log.warn("上传文件超过大小限制: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.fail(ResultCode.BAD_REQUEST, "文件大小超过 100MB 上限"));
+    }
+
+    /**
+     * 缺少 file / bizType 等表单字段属于客户端参数问题，按 400 返回。
+     */
+    @ExceptionHandler({MissingServletRequestPartException.class, MissingServletRequestParameterException.class})
+    public ResponseEntity<ApiResponse<Void>> handleMissingPart(Exception ex) {
+        String name = ex instanceof MissingServletRequestPartException part
+                ? part.getRequestPartName()
+                : ((MissingServletRequestParameterException) ex).getParameterName();
+        String message = "file".equals(name) ? "请选择要上传的文件" : "缺少参数：" + name;
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.fail(ResultCode.BAD_REQUEST, message));
     }

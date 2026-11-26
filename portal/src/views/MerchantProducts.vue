@@ -303,14 +303,17 @@
             </el-col>
             <el-col :span="24">
               <el-form-item label="商品图集">
-                <el-input
-                  v-model="imagesText"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="每行一张图片 URL，最多 9 张"
-                />
-                <div class="form-tip">
-                  每行填写一张图片地址，留空则不上传图集
+                <div class="product-images">
+                  <MultiImageUpload v-model="productImages" :limit="9" biz-type="product" />
+                  <el-input
+                    v-model="imagesText"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="也可每行粘贴一张图片 URL，最多 9 张"
+                  />
+                  <div class="form-tip">
+                    上传或粘贴图片地址均可，留空则不上传图集
+                  </div>
                 </div>
               </el-form-item>
             </el-col>
@@ -355,6 +358,7 @@ import {
 } from "../api/product";
 import { useUserStore } from "../store/user";
 import { money } from "../utils/format";
+import MultiImageUpload from "../components/MultiImageUpload.vue";
 
 const router = useRouter();
 const store = useUserStore();
@@ -369,6 +373,19 @@ const formRef = ref();
 const isEdit = ref(false);
 const editingId = ref(null);
 const imagesText = ref("");
+
+/** 上传组件与「每行一个 URL」文本框共用同一份数据 */
+const productImages = computed({
+  get: () =>
+    imagesText.value
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 9),
+  set: (list) => {
+    imagesText.value = list.join("\n");
+  },
+});
 
 /** 统一补齐 value 字段，兼容 el-tree-select 的取值约定 */
 function toTreeOptions(nodes) {
@@ -700,6 +717,13 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.product-images {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
 .form-tip {

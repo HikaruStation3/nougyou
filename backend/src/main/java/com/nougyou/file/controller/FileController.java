@@ -1,6 +1,7 @@
 package com.nougyou.file.controller;
 
 import com.nougyou.common.api.ApiResponse;
+import com.nougyou.file.dto.UploadVO;
 import com.nougyou.file.service.MinioFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,10 +19,24 @@ public class FileController {
 
     private final MinioFileService fileService;
 
+    /**
+     * 上传文件（API-113）：身份证、贫困证明、商品图、头像、短视频统一走此接口。
+     * bizType 决定存储目录与校验规则。
+     */
+    @PostMapping("/upload")
+    @PreAuthorize("hasAuthority('file:upload')")
+    public ApiResponse<UploadVO> upload(@RequestParam("file") MultipartFile file,
+                                        @RequestParam(value = "bizType", required = false) String bizType) {
+        return ApiResponse.ok(fileService.upload(file, bizType));
+    }
+
+    /**
+     * 旧版上传入口，保留兼容历史页面与短视频上传；新代码请使用 POST /files/upload。
+     */
     @PostMapping
     @PreAuthorize("hasAuthority('file:upload')")
-    public ApiResponse<MinioFileService.FileInfo> upload(@RequestParam("file") MultipartFile file) {
-        return ApiResponse.ok(fileService.upload(file));
+    public ApiResponse<MinioFileService.FileInfo> uploadLegacy(@RequestParam("file") MultipartFile file) {
+        return ApiResponse.ok(fileService.uploadLegacy(file));
     }
 
     @DeleteMapping

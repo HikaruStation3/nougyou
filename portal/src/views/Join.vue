@@ -75,6 +75,27 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
+            <el-form-item label="证件材料">
+              <div class="proof-uploads">
+                <div class="proof-upload">
+                  <span class="proof-upload__label">身份证正面</span>
+                  <SingleImageUpload v-model="form.idCardFront" biz-type="idcard" />
+                </div>
+                <div class="proof-upload">
+                  <span class="proof-upload__label">身份证反面</span>
+                  <SingleImageUpload v-model="form.idCardBack" biz-type="idcard" />
+                </div>
+                <div class="proof-upload">
+                  <span class="proof-upload__label">贫困证明 <i>*</i></span>
+                  <SingleImageUpload v-model="form.povertyProof" biz-type="proof" />
+                </div>
+              </div>
+              <div class="proof-uploads__tip">
+                支持 jpg / jpeg / png，单张不超过 5MB；贫困证明用于管理员审核，必须上传
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
             <el-form-item label="申请说明" prop="applyDesc">
               <el-input
                 v-model="form.applyDesc"
@@ -130,6 +151,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { getMyFarmerApplies, submitFarmerApply } from "../api/farmer";
 import { useUserStore } from "../store/user";
+import SingleImageUpload from "../components/SingleImageUpload.vue";
 
 const store = useUserStore();
 const formRef = ref();
@@ -149,6 +171,9 @@ const emptyForm = () => ({
   householdNum: 1,
   povertyCardNo: "",
   mainProduct: "",
+  idCardFront: "",
+  idCardBack: "",
+  povertyProof: "",
   applyDesc: ""
 });
 
@@ -166,7 +191,8 @@ const rules = {
   ],
   village: [{ required: true, message: "请选择所属村", trigger: "change" }],
   povertyLevel: [{ required: true, message: "请选择贫困属性", trigger: "change" }],
-  householdNum: [{ required: true, message: "请输入家庭人口数", trigger: "change" }]
+  householdNum: [{ required: true, message: "请输入家庭人口数", trigger: "change" }],
+  povertyProof: [{ required: true, message: "请上传贫困证明", trigger: "change" }]
 };
 
 const isFarmer = computed(() => (store.state.user?.roles || []).includes("FARMER"));
@@ -269,6 +295,35 @@ onMounted(async () => {
 .card-tip {
   font-size: 12px;
   font-weight: 400;
+  color: #8a9d92;
+}
+
+.proof-uploads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.proof-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proof-upload__label {
+  font-size: 12px;
+  color: #5d7668;
+}
+
+.proof-upload__label i {
+  color: var(--el-color-danger);
+  font-style: normal;
+}
+
+.proof-uploads__tip {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
   color: #8a9d92;
 }
 

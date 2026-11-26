@@ -72,8 +72,8 @@ const editorConfig: Partial<IEditorConfig> = {
   MENU_CONF: {
     uploadImage: {
       customUpload(file: File, insertFn: InsertFnType) {
-        // 上传图片
-        FileAPI.uploadFile(file).then((res) => {
+        // 上传图片（正文配图按商品图归档）
+        FileAPI.uploadWithBizType(file, "product").then((res) => {
           // 插入图片
           insertFn(res.url, res.name, res.url);
         });

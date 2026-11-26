@@ -111,7 +111,7 @@ public class MenuController {
                     "/ai/" + redirect, aiMenus));
         }
         if (perms.contains("file:upload:menu")) {
-            Map<String, Object> fileMenu = route("file", "demo/file/index", "FileDemo",
+            Map<String, Object> fileMenu = route("file", "system/file/index", "FileUpload",
                     "文件上传", "el-icon-Upload", null, null);
             routes.add(route("/tools", "Layout", "/tools", "工具箱", "el-icon-FolderOpened",
                     "/tools/file", List.of(fileMenu)));

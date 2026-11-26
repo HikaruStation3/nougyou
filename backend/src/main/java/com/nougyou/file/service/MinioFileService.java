@@ -2,6 +2,8 @@ package com.nougyou.file.service;
 
 import com.nougyou.common.exception.BusinessException;
 import com.nougyou.config.MinioProperties;
+import com.nougyou.file.dto.UploadVO;
+import com.nougyou.file.enums.FileBizType;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -21,13 +23,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * 文件存储：优先使用 MinIO（NFR-011），MinIO 不可用时退回本地磁盘，
- * 保证在没有启动对象存储的开发机上依然可以上传短视频并本地播放。
+ * 保证在没有启动对象存储的开发机上依然可以上传证件、商品图与短视频。
  * <p>
- * MinIO 桶设为公共读，返回固定访问地址，避免预签名地址过期导致图片失效。
+ * 桶设为公共读，返回固定访问地址，避免预签名地址过期导致图片失效。
+ * 对象路径按业务类型分目录：{@code idcard/2026/11/uuid.jpg}，便于按用途归档与清理。
  */
 @Slf4j
 @Service
@@ -35,6 +40,14 @@ import java.util.UUID;
 public class MinioFileService {
 
     private static final String LOCAL_URL_PREFIX = "/api/v1/files/local/";
+    private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM");
+
+    /** 扩展名与 MIME 的固定映射，避免信任客户端传来的 Content-Type */
+    private static final Map<String, String> CONTENT_TYPES = Map.of(
+            "jpg", "image/jpeg",
+            "jpeg", "image/jpeg",
+            "png", "image/png",
+            "mp4", "video/mp4");
 
     private final MinioClient minioClient;
     private final MinioProperties properties;
@@ -42,20 +55,32 @@ public class MinioFileService {
     @Value("${nougyou.file.local-dir:./uploads}")
     private String localDir;
 
-    public FileInfo upload(MultipartFile file) {
+    /**
+     * 按业务类型上传文件（API-113）。
+     */
+    public UploadVO upload(MultipartFile file, String bizTypeCode) {
+        FileBizType bizType = FileBizType.of(bizTypeCode);
+        StoredFile stored = store(file, bizType);
+        return UploadVO.builder()
+                .url(stored.url())
+                .name(stored.originalName())
+                .size(stored.size())
+                .contentType(stored.contentType())
+                .build();
+    }
+
+    /**
+     * 旧版上传接口（POST /api/v1/files）保留兼容：
+     * 视频按 mp4 归档到 video 目录，其余图片统一归档到 product 目录。
+     */
+    public FileInfo uploadLegacy(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("上传文件不能为空");
         }
-        String originalName = StringUtils.hasText(file.getOriginalFilename())
-                ? file.getOriginalFilename() : "file";
-        String objectName = LocalDate.now() + "/" + UUID.randomUUID() + extension(originalName);
-        try {
-            String url = uploadToMinio(file, objectName);
-            return new FileInfo(originalName, url, objectName);
-        } catch (Exception ex) {
-            log.warn("MinIO 不可用（{}），改用本地磁盘存储", ex.getMessage());
-            return uploadToLocal(file, originalName, objectName);
-        }
+        String extension = extension(originalName(file)).toLowerCase();
+        FileBizType bizType = "mp4".equals(extension) ? FileBizType.VIDEO : FileBizType.PRODUCT;
+        StoredFile stored = store(file, bizType);
+        return new FileInfo(stored.originalName(), stored.url(), stored.objectName());
     }
 
     public void delete(String filePath) {
@@ -86,9 +111,44 @@ public class MinioFileService {
         }
     }
 
+    /* ------------------------------ 校验与存储 ------------------------------ */
+
+    private StoredFile store(MultipartFile file, FileBizType bizType) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("上传文件不能为空");
+        }
+        String originalName = originalName(file);
+        String extension = extension(originalName).toLowerCase();
+        if (!bizType.getExtensions().contains(extension)) {
+            throw new BusinessException(bizType.getLabel() + "仅支持 " + bizType.extensionText() + " 格式");
+        }
+        if (file.getSize() > bizType.getMaxSize()) {
+            throw new BusinessException(bizType.getLabel() + "大小不能超过 " + bizType.maxSizeText());
+        }
+
+        String objectName = bizType.getCode() + "/" + LocalDate.now().format(MONTH_FORMAT)
+                + "/" + UUID.randomUUID() + (extension.isEmpty() ? "" : "." + extension);
+        String contentType = CONTENT_TYPES.getOrDefault(extension, "application/octet-stream");
+        try {
+            String url = uploadToMinio(file, objectName, contentType);
+            return new StoredFile(originalName, objectName, url, file.getSize(), contentType);
+        } catch (Exception ex) {
+            log.warn("MinIO 不可用（{}），改用本地磁盘存储", ex.getMessage());
+            return uploadToLocal(file, originalName, objectName, contentType);
+        }
+    }
+
+    private String originalName(MultipartFile file) {
+        String originalName = StringUtils.hasText(file.getOriginalFilename())
+                ? file.getOriginalFilename() : "file";
+        // 去掉 IE / 部分客户端带上的完整路径，避免文件名里混入目录
+        int slash = Math.max(originalName.lastIndexOf('/'), originalName.lastIndexOf('\\'));
+        return slash >= 0 ? originalName.substring(slash + 1) : originalName;
+    }
+
     /* ------------------------------ MinIO ------------------------------ */
 
-    private String uploadToMinio(MultipartFile file, String objectName) throws Exception {
+    private String uploadToMinio(MultipartFile file, String objectName, String contentType) throws Exception {
         String bucket = properties.getBucket();
         ensureBucket(bucket);
         try (InputStream inputStream = file.getInputStream()) {
@@ -96,7 +156,7 @@ public class MinioFileService {
                     .bucket(bucket)
                     .object(objectName)
                     .stream(inputStream, file.getSize(), -1)
-                    .contentType(file.getContentType())
+                    .contentType(contentType)
                     .build());
         }
         return publicUrl(objectName);
@@ -131,7 +191,8 @@ public class MinioFileService {
 
     /* ------------------------------ 本地兜底 ------------------------------ */
 
-    private FileInfo uploadToLocal(MultipartFile file, String originalName, String objectName) {
+    private StoredFile uploadToLocal(MultipartFile file, String originalName, String objectName,
+                                     String contentType) {
         Path root = Paths.get(localDir).toAbsolutePath().normalize();
         Path target = root.resolve(objectName).normalize();
         if (!target.startsWith(root)) {
@@ -143,7 +204,8 @@ public class MinioFileService {
         } catch (IOException ex) {
             throw new BusinessException("文件保存失败：" + ex.getMessage());
         }
-        return new FileInfo(originalName, LOCAL_URL_PREFIX + objectName, objectName);
+        return new StoredFile(originalName, objectName, LOCAL_URL_PREFIX + objectName,
+                file.getSize(), contentType);
     }
 
     private void deleteLocal(String objectName) {
@@ -159,9 +221,17 @@ public class MinioFileService {
         }
     }
 
+    /**
+     * 取扩展名（不含点）；没有扩展名时返回空字符串。
+     */
     private String extension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
-        return dotIndex >= 0 ? fileName.substring(dotIndex) : "";
+        return dotIndex >= 0 && dotIndex < fileName.length() - 1
+                ? fileName.substring(dotIndex + 1) : "";
+    }
+
+    private record StoredFile(String originalName, String objectName, String url,
+                              long size, String contentType) {
     }
 
     public record FileInfo(String name, String url, String objectName) {

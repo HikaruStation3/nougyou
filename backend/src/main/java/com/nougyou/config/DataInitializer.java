@@ -164,6 +164,8 @@ public class DataInitializer implements ApplicationRunner {
     );
 
     private static final List<String> BUYER_PERMISSION_CODES = List.of(
+            // 文件上传：买家提交入驻申请时要传身份证与贫困证明（API-113）
+            "file:upload",
             "product:view", "order:create",
             "product:list", "product:detail",
             "cart:list", "cart:add", "cart:edit", "cart:delete", "cart:clear",

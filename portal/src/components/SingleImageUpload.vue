@@ -4,7 +4,7 @@
     class="single-upload"
     list-type="picture-card"
     :show-file-list="false"
-    accept="image/*"
+    accept=".jpg,.jpeg,.png"
     :before-upload="handleBeforeUpload"
     :http-request="handleUpload"
   >
@@ -26,8 +26,10 @@ import { uploadFile } from "../api/file";
 
 const props = defineProps({
   modelValue: { type: String, default: "" },
+  /** 业务类型：idcard / proof / product / avatar（API-113） */
+  bizType: { type: String, default: "product" },
   /** 最大文件大小（MB） */
-  maxSize: { type: Number, default: 10 }
+  maxSize: { type: Number, default: 5 }
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -36,6 +38,11 @@ const uploading = ref(false);
 function handleBeforeUpload(file) {
   if (!file.type.startsWith("image/")) {
     ElMessage.warning("只能上传图片文件");
+    return false;
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (!["jpg", "jpeg", "png"].includes(ext)) {
+    ElMessage.warning("图片仅支持 jpg / jpeg / png 格式");
     return false;
   }
   if (file.size > props.maxSize * 1024 * 1024) {
@@ -48,7 +55,7 @@ function handleBeforeUpload(file) {
 async function handleUpload(options) {
   uploading.value = true;
   try {
-    const info = await uploadFile(options.file);
+    const info = await uploadFile(options.file, props.bizType);
     emit("update:modelValue", info.url);
     ElMessage.success("上传成功");
     return info;

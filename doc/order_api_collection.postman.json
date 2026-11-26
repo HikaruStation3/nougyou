@@ -1,0 +1,1131 @@
+{
+  "info": {
+    "name": "Nougyou 订单模块 API-052~060 测试",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "配合 doc/order_api_test_manual.md 使用。默认指向 8081 免验证码实例；按文件夹顺序执行即可串起完整链路。"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/api/v1"
+    },
+    {
+      "key": "buyerToken",
+      "value": ""
+    },
+    {
+      "key": "farmerToken",
+      "value": ""
+    },
+    {
+      "key": "farmer2Token",
+      "value": ""
+    },
+    {
+      "key": "buyer2Token",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "orderNo",
+      "value": ""
+    },
+    {
+      "key": "cancelOrderId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 准备：登录拿 Token",
+      "item": [
+        {
+          "name": "登录 · buyer01",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer01\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"登录成功\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"返回 accessToken\", () => pm.expect(j.data.accessToken).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"buyerToken\", j.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "登录 · farmer01",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"farmer01\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"登录成功\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"返回 accessToken\", () => pm.expect(j.data.accessToken).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"farmerToken\", j.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "登录 · farmer02（越权对照）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"farmer02\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"登录成功\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"返回 accessToken\", () => pm.expect(j.data.accessToken).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"farmer2Token\", j.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "登录 · buyer02（越权对照）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer02\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"登录成功\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"返回 accessToken\", () => pm.expect(j.data.accessToken).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"buyer2Token\", j.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "登录 · admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"登录成功\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"返回 accessToken\", () => pm.expect(j.data.accessToken).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"adminToken\", j.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 主链路 API-052 → 060",
+      "item": [
+        {
+          "name": "API-052 提交订单（立即购买）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"buyNow\",\n  \"productId\": 1,\n  \"quantity\": 2,\n  \"receiverName\": \"沈明\",\n  \"receiverPhone\": \"13800138000\",\n  \"receiverAddress\": \"莆田市仙游县钟山镇湖亭村 3 号\",\n  \"remark\": \"Postman 自动测试\",\n  \"payType\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "const d = j.data;",
+                  "pm.test(\"返回订单数组\", () => pm.expect(d).to.be.an(\"array\"));",
+                  "pm.test(\"单商家只生成 1 单\", () => pm.expect(d.length).to.eql(1));",
+                  "pm.collectionVariables.set(\"orderId\", d[0].id);",
+                  "pm.collectionVariables.set(\"orderNo\", d[0].orderNo);",
+                  "pm.test(\"初始状态待付款\", () => { pm.expect(d[0].orderStatus).to.eql(0); pm.expect(d[0].payStatus).to.eql(0); });",
+                  "pm.test(\"金额=28×2\", () => pm.expect(Number(d[0].totalAmount)).to.eql(56));",
+                  "pm.test(\"列表手机号脱敏\", () => pm.expect(d[0].receiverPhone).to.eql(\"138****8000\"));",
+                  "pm.test(\"自营商品无委托ID\", () => pm.expect(d[0].items[0].entrustId).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-053 我的订单列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?pageNum=1&pageSize=10&orderStatus=0&keyword={{orderNo}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "pageNum",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "orderStatus",
+                  "value": "0"
+                },
+                {
+                  "key": "keyword",
+                  "value": "{{orderNo}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "const d = j.data;",
+                  "pm.test(\"命中 1 条\", () => pm.expect(d.total).to.eql(1));",
+                  "pm.test(\"单号一致\", () => pm.expect(d.list[0].orderNo).to.eql(pm.collectionVariables.get(\"orderNo\")));",
+                  "pm.test(\"列表脱敏\", () => pm.expect(d.list[0].receiverPhone).to.eql(\"138****8000\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-054 订单详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"详情手机号明文\", () => pm.expect(j.data.receiverPhone).to.eql(\"13800138000\"));",
+                  "pm.test(\"明细 1 条\", () => pm.expect(j.data.items.length).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-055 支付订单（模拟）",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "pay"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payType\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"进入待发货\", () => pm.expect(j.data.orderStatus).to.eql(1));",
+                  "pm.test(\"支付状态已支付\", () => pm.expect(j.data.payStatus).to.eql(1));",
+                  "pm.test(\"payTime 有值\", () => pm.expect(j.data.payTime).to.not.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-058 商家订单列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/farmer/orders?pageNum=1&pageSize=10&orderStatus=1&keyword={{orderNo}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "farmer",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "pageNum",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "orderStatus",
+                  "value": "1"
+                },
+                {
+                  "key": "keyword",
+                  "value": "{{orderNo}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{farmerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"本店能看到该单\", () => pm.expect(j.data.total).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-059 订单发货",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/farmer/orders/{{orderId}}/ship",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "farmer",
+                "orders",
+                "{{orderId}}",
+                "ship"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{farmerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"logisticsCompany\": \"顺丰速运\",\n  \"logisticsNo\": \"SF1234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"进入待收货\", () => pm.expect(j.data.orderStatus).to.eql(2));",
+                  "pm.test(\"物流单号原样写入\", () => pm.expect(j.data.logisticsNo).to.eql(\"SF1234567890\"));",
+                  "pm.test(\"shipTime 有值\", () => pm.expect(j.data.shipTime).to.not.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-057 确认收货",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "confirm"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"已完成\", () => pm.expect(j.data.orderStatus).to.eql(3));",
+                  "pm.test(\"finishTime 有值\", () => pm.expect(j.data.finishTime).to.not.eql(null));",
+                  "pm.test(\"可申请售后\", () => pm.expect(j.data.afterSaleAllowed).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-060 后台订单查询",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders?orderNo={{orderNo}}&pageNum=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "orderNo",
+                  "value": "{{orderNo}}"
+                },
+                {
+                  "key": "pageNum",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"精确命中 1 条\", () => pm.expect(j.data.total).to.eql(1));",
+                  "pm.test(\"状态已完成\", () => pm.expect(j.data.list[0].orderStatus).to.eql(3));",
+                  "pm.test(\"后台列表脱敏\", () => pm.expect(j.data.list[0].receiverPhone).to.eql(\"138****8000\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 分支：取消订单与库存回滚",
+      "item": [
+        {
+          "name": "API-052 再下一单（用于取消）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"buyNow\",\n  \"productId\": 8,\n  \"quantity\": 3,\n  \"receiverName\": \"沈明\",\n  \"receiverPhone\": \"13800138000\",\n  \"receiverAddress\": \"莆田市仙游县钟山镇湖亭村 3 号\",\n  \"payType\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.collectionVariables.set(\"cancelOrderId\", j.data[0].id);",
+                  "pm.test(\"新单待付款\", () => pm.expect(j.data[0].orderStatus).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-056 取消订单",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{cancelOrderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{cancelOrderId}}",
+                "cancel"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"不想要了\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 00000\", () => pm.expect(j.code).to.eql(\"00000\"));",
+                  "pm.test(\"状态已取消\", () => pm.expect(j.data.orderStatus).to.eql(4));",
+                  "pm.test(\"支付状态仍为未支付\", () => pm.expect(j.data.payStatus).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 异常与越权（预期全部失败）",
+      "item": [
+        {
+          "name": "API-055 重复支付 → A0400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "pay"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payType\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 A0400\", () => pm.expect(j.code).to.eql(\"A0400\"));",
+                  "pm.test(\"提示不可支付\", () => pm.expect(j.msg).to.include(\"不可支付\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-056 取消已支付订单 → A0400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"测试\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 A0400\", () => pm.expect(j.code).to.eql(\"A0400\"));",
+                  "pm.test(\"提示仅待付款可取消\", () => pm.expect(j.msg).to.include(\"仅待付款\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-059 farmer02 越权发货 → A0301",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/farmer/orders/{{orderId}}/ship",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "farmer",
+                "orders",
+                "{{orderId}}",
+                "ship"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{farmer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"logisticsCompany\": \"测试\",\n  \"logisticsNo\": \"X1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 A0301\", () => pm.expect(j.code).to.eql(\"A0301\"));",
+                  "pm.test(\"提示无权操作\", () => pm.expect(j.msg).to.include(\"无权操作\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-054 buyer02 越权查看 → A0301",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyer2Token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 A0301\", () => pm.expect(j.code).to.eql(\"A0301\"));",
+                  "pm.test(\"提示无权查看\", () => pm.expect(j.msg).to.include(\"无权查看\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API-053 不传 Token → HTTP 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?pageNum=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "pageNum",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"业务码 A0230\", () => pm.expect(j.code).to.eql(\"A0230\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

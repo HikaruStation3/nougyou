@@ -3,12 +3,11 @@ package com.nougyou.file.service;
 import com.nougyou.common.exception.BusinessException;
 import com.nougyou.config.MinioProperties;
 import io.minio.BucketExistsArgs;
-import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import io.minio.http.Method;
+import io.minio.SetBucketPolicyArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,18 +22,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 文件存储：优先使用 MinIO（NFR-011），MinIO 不可用时退回本地磁盘，
  * 保证在没有启动对象存储的开发机上依然可以上传短视频并本地播放。
+ * <p>
+ * MinIO 桶设为公共读，返回固定访问地址，避免预签名地址过期导致图片失效。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MinioFileService {
 
-    private static final int PRESIGN_EXPIRE_DAYS = 7;
     private static final String LOCAL_URL_PREFIX = "/api/v1/files/local/";
 
     private final MinioClient minioClient;
@@ -100,12 +99,7 @@ public class MinioFileService {
                     .contentType(file.getContentType())
                     .build());
         }
-        return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-                .method(Method.GET)
-                .bucket(bucket)
-                .object(objectName)
-                .expiry(PRESIGN_EXPIRE_DAYS, TimeUnit.DAYS)
-                .build());
+        return publicUrl(objectName);
     }
 
     private void ensureBucket(String bucket) throws Exception {
@@ -113,6 +107,26 @@ public class MinioFileService {
         if (!exists) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
         }
+        // 桶设为公共读，返回固定访问地址，避免预签名地址过期导致图片失效
+        minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
+                .bucket(bucket)
+                .config(publicReadPolicy(bucket))
+                .build());
+    }
+
+    private String publicReadPolicy(String bucket) {
+        return "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\","
+                + "\"Principal\":{\"AWS\":[\"*\"]},"
+                + "\"Action\":[\"s3:GetObject\"],"
+                + "\"Resource\":[\"arn:aws:s3:::" + bucket + "/*\"]}]}";
+    }
+
+    private String publicUrl(String objectName) {
+        String endpoint = properties.getEndpoint();
+        if (endpoint != null && endpoint.endsWith("/")) {
+            endpoint = endpoint.substring(0, endpoint.length() - 1);
+        }
+        return endpoint + "/" + properties.getBucket() + "/" + objectName;
     }
 
     /* ------------------------------ 本地兜底 ------------------------------ */

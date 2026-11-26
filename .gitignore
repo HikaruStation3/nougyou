@@ -4,6 +4,7 @@ backend/target/
 *.jar
 *.log
 backend/backend.log.*
+.minio-data/
 .idea/
 *.iml
 

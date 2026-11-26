@@ -52,6 +52,15 @@
                   <el-tag v-if="item.entrustId" size="small" type="success" effect="plain" class="entrust-tag">
                     委托代销
                   </el-tag>
+                  <el-tag
+                    v-if="item.afterSaleStatus !== null && item.afterSaleStatus !== undefined"
+                    size="small"
+                    :type="afterSaleStatusTag(item.afterSaleStatus)"
+                    effect="plain"
+                    class="entrust-tag"
+                  >
+                    {{ afterSaleStatusText(item.afterSaleStatus) }}
+                  </el-tag>
                 </div>
               </div>
               <div class="item-subtotal">￥{{ money(item.subtotal) }}</div>
@@ -65,6 +74,13 @@
             </span>
             <div class="order-actions">
               <el-button size="small" @click="goDetail(order)">查看详情</el-button>
+              <el-button
+                v-if="order.afterSaleAllowed"
+                size="small"
+                type="warning"
+                @click="goDetail(order, 'after-sale')"
+                >申请售后</el-button
+              >
               <el-button
                 v-if="order.orderStatus === 0"
                 size="small"
@@ -118,6 +134,7 @@ import {
 } from "../api/order";
 import { money } from "../utils/format";
 import { orderStatusTag, orderStatusText } from "../utils/order";
+import { afterSaleStatusTag, afterSaleStatusText } from "../utils/afterSale";
 import { choosePayChannel, gotoAlipayCashier } from "../utils/alipay";
 
 const route = useRoute();
@@ -170,8 +187,8 @@ function handleSearch() {
   loadOrders();
 }
 
-function goDetail(order) {
-  router.push(`/orders/${order.id}`);
+function goDetail(order, focus) {
+  router.push(focus ? `/orders/${order.id}?focus=${focus}` : `/orders/${order.id}`);
 }
 
 async function handlePay(order) {

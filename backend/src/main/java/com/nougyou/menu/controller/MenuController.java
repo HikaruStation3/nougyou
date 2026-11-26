@@ -58,6 +58,10 @@ public class MenuController {
             systemMenus.add(route("order", "system/order/index", "OrderQuery",
                     "订单查询", "el-icon-List", null, null));
         }
+        if (perms.contains("afterSale:intervene")) {
+            systemMenus.add(route("after-sale", "system/after-sale/index", "AfterSaleAdmin",
+                    "售后处理", "el-icon-RefreshLeft", null, null));
+        }
         if (perms.contains("entrust:settle")) {
             systemMenus.add(route("entrust", "system/entrust/index", "EntrustSettle",
                     "委托结算", "el-icon-Money", null, null));

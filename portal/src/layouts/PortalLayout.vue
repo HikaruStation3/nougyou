@@ -45,6 +45,9 @@
                   <el-dropdown-item v-if="canViewOrders" command="orders"
                     >我的订单</el-dropdown-item
                   >
+                  <el-dropdown-item v-if="canViewOrders" command="after-sales"
+                    >我的售后</el-dropdown-item
+                  >
                   <el-dropdown-item v-if="canUseCart" command="cart"
                     >我的购物车</el-dropdown-item
                   >
@@ -65,6 +68,9 @@
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant-orders"
                     >商家订单</el-dropdown-item
+                  >
+                  <el-dropdown-item v-if="isFarmer" command="merchant-after-sales"
+                    >商家售后</el-dropdown-item
                   >
                   <el-dropdown-item v-if="isFarmer" command="merchant-entrusts"
                     >委托销售</el-dropdown-item
@@ -164,6 +170,7 @@ async function loadCartCount() {
 /** 菜单命令到路由的映射，新增入口只需在这里加一行 */
 const COMMAND_ROUTES = {
   orders: "/orders",
+  "after-sales": "/after-sales",
   cart: "/cart",
   consult: "/consult",
   "merchant-workbench": "/merchant/workbench",
@@ -171,6 +178,7 @@ const COMMAND_ROUTES = {
   "merchant-products": "/merchant/products",
   "merchant-videos": "/merchant/videos",
   "merchant-orders": "/merchant/orders",
+  "merchant-after-sales": "/merchant/after-sales",
   "merchant-entrusts": "/merchant/entrusts",
   profile: "/profile",
 };

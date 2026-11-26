@@ -110,6 +110,12 @@ const routes = [
         meta: { title: "订单详情", requiresAuth: true },
       },
       {
+        path: "after-sales",
+        name: "after-sales",
+        component: () => import("../views/AfterSales.vue"),
+        meta: { title: "我的售后", requiresAuth: true },
+      },
+      {
         // 支付宝沙箱同步跳转落地页，return_url 配的就是这个地址
         path: "pay/result",
         name: "pay-result",
@@ -131,6 +137,12 @@ const routes = [
         name: "merchant-orders",
         component: () => import("../views/MerchantOrders.vue"),
         meta: { title: "商家订单", requiresAuth: true, requiresFarmer: true },
+      },
+      {
+        path: "merchant/after-sales",
+        name: "merchant-after-sales",
+        component: () => import("../views/MerchantAfterSales.vue"),
+        meta: { title: "商家售后", requiresAuth: true, requiresFarmer: true },
       },
       {
         path: "merchant/entrusts",

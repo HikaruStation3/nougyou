@@ -45,13 +45,13 @@
         <p class="kpi-foot">共 {{ data.productTotal }} 款商品，在售 {{ data.onSaleCount }} 款</p>
       </article>
 
-      <article class="kpi-card">
+      <article class="kpi-card clickable" @click="router.push('/merchant/after-sales')">
         <div class="kpi-head">
           <span>待处理售后</span>
           <el-icon><Service /></el-icon>
         </div>
         <strong class="kpi-value">{{ data.afterSalePending }}<small> 单</small></strong>
-        <p class="kpi-foot">及时处理可减少纠纷与退款</p>
+        <p class="kpi-foot">及时处理可减少纠纷与退款 · 点击查看</p>
       </article>
     </section>
 
@@ -386,6 +386,16 @@ onMounted(async () => {
 .kpi-card.kpi-warn {
   border-color: #f0c78a;
   background: #fffaf0;
+}
+
+.kpi-card.clickable {
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card.clickable:hover {
+  border-color: #8ccfa8;
+  box-shadow: 0 6px 18px rgba(46, 158, 91, 0.12);
 }
 
 .kpi-head {

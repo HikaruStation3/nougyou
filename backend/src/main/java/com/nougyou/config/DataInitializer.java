@@ -136,7 +136,14 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("新增资讯", "cms:news:create", "BUTTON", 105),
             new PermissionSeed("编辑资讯", "cms:news:update", "BUTTON", 106),
             new PermissionSeed("删除资讯", "cms:news:delete", "BUTTON", 107),
-            new PermissionSeed("资讯发布下架", "cms:news:publish", "BUTTON", 108)
+            new PermissionSeed("资讯发布下架", "cms:news:publish", "BUTTON", 108),
+            // 售后服务（FR-008 买家提交与查询 / FR-019 商家处理与平台介入）
+            new PermissionSeed("提交售后申请", "afterSale:add", "BUTTON", 109),
+            new PermissionSeed("我的售后列表", "afterSale:list", "BUTTON", 110),
+            new PermissionSeed("售后详情", "afterSale:detail", "BUTTON", 111),
+            new PermissionSeed("商家售后列表", "afterSale:farmerList", "BUTTON", 112),
+            new PermissionSeed("处理售后", "afterSale:handle", "BUTTON", 113),
+            new PermissionSeed("平台介入处理", "afterSale:intervene", "BUTTON", 114)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()
@@ -150,6 +157,8 @@ public class DataInitializer implements ApplicationRunner {
             "product:list", "product:detail", "product:my",
             "product:add", "product:edit", "product:shelf", "product:delete",
             "order:detail", "order:farmerList", "order:ship",
+            // 售后：本店待办处理（FR-019）
+            "afterSale:farmerList", "afterSale:handle", "afterSale:detail",
             "entrust:add", "entrust:list", "entrust:detail", "entrust:confirm",
             "entrust:terminate", "entrust:stat", "entrust:settlement",
             "dashboard:view",
@@ -170,6 +179,8 @@ public class DataInitializer implements ApplicationRunner {
             "product:list", "product:detail",
             "cart:list", "cart:add", "cart:edit", "cart:delete", "cart:clear",
             "order:list", "order:detail", "order:pay", "order:cancel", "order:confirm",
+            // 售后：提交诉求与查询进度（FR-008）
+            "afterSale:add", "afterSale:list", "afterSale:detail",
             "farmerApply:submit", "farmerApply:my",
             "project:list", "project:detail",
             "service:list", "service:create", "service:message", "service:send", "service:read",

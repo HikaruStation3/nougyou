@@ -82,6 +82,14 @@ public class MenuController {
             systemMenus.add(route("notice", "system/notice/index", "Notice",
                     "通知公告", "el-icon-Bell", null, null));
         }
+        if (perms.contains("cms:policy:menu")) {
+            systemMenus.add(route("policy", "system/policy/index", "PolicyManage",
+                    "政策管理", "el-icon-Tickets", null, null));
+        }
+        if (perms.contains("cms:news:menu")) {
+            systemMenus.add(route("news", "system/news/index", "NewsManage",
+                    "资讯管理", "el-icon-Reading", null, null));
+        }
         if (!systemMenus.isEmpty()) {
             String redirect = String.valueOf(systemMenus.get(0).get("path"));
             routes.add(route("/system", "Layout", "/system", "系统管理", "el-icon-Setting",

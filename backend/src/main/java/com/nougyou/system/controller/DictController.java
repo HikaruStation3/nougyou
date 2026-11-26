@@ -33,7 +33,18 @@ public class DictController {
             "notice_level", List.of(
                     item("L", "普通", "info"),
                     item("M", "重要", "warning"),
-                    item("H", "紧急", "danger"))
+                    item("H", "紧急", "danger")),
+            // 内容资讯：资讯栏目（FR-004）与政策/资讯共用的发布状态
+            "news_type", List.of(
+                    item(1, "景点宣传", "primary"),
+                    item(2, "旅游推介", "success"),
+                    item(3, "乡镇历史", "info"),
+                    item(4, "地域文化", "warning"),
+                    item(5, "人文地理", "danger")),
+            "publish_status", List.of(
+                    item(0, "草稿", "info"),
+                    item(1, "已发布", "success"),
+                    item(2, "已下架", "warning"))
     );
 
     @GetMapping("/{dictCode}/items/options")

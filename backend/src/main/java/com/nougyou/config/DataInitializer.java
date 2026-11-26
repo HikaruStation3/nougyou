@@ -125,7 +125,18 @@ public class DataInitializer implements ApplicationRunner {
             new PermissionSeed("编辑通知", "sys:notice:update", "BUTTON", 95),
             new PermissionSeed("删除通知", "sys:notice:delete", "BUTTON", 96),
             new PermissionSeed("发布通知", "sys:notice:publish", "BUTTON", 97),
-            new PermissionSeed("撤回通知", "sys:notice:revoke", "BUTTON", 98)
+            new PermissionSeed("撤回通知", "sys:notice:revoke", "BUTTON", 98),
+            // 内容资讯（FR-003 / FR-004 / FR-030）：后台维护政策与资讯
+            new PermissionSeed("政策管理", "cms:policy:menu", "MENU", 99),
+            new PermissionSeed("新增政策", "cms:policy:create", "BUTTON", 100),
+            new PermissionSeed("编辑政策", "cms:policy:update", "BUTTON", 101),
+            new PermissionSeed("删除政策", "cms:policy:delete", "BUTTON", 102),
+            new PermissionSeed("政策发布下架", "cms:policy:publish", "BUTTON", 103),
+            new PermissionSeed("资讯管理", "cms:news:menu", "MENU", 104),
+            new PermissionSeed("新增资讯", "cms:news:create", "BUTTON", 105),
+            new PermissionSeed("编辑资讯", "cms:news:update", "BUTTON", 106),
+            new PermissionSeed("删除资讯", "cms:news:delete", "BUTTON", 107),
+            new PermissionSeed("资讯发布下架", "cms:news:publish", "BUTTON", 108)
     );
 
     private static final List<String> ALL_PERMISSION_CODES = PERMISSIONS.stream()

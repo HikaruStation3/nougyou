@@ -16,4 +16,7 @@ public class PolicyPageQuery {
 
     /** 发布单位 */
     private String issueDept;
+
+    /** 管理端专用：0 草稿 / 1 已发布 / 2 已下架；公开列表忽略该条件 */
+    private Integer publishStatus;
 }

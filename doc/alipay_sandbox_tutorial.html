@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钟山镇扶贫助农系统 · 支付宝沙箱支付接入教程</title>
+<style>
+  :root{
+    --ink:#1f2329;
+    --ink-2:#4e5969;
+    --ink-3:#86909c;
+    --line:#e5e6eb;
+    --bg:#f5f6f8;
+    --card:#ffffff;
+    --brand:#1677ff;
+    --brand-soft:#e8f2ff;
+    --ok:#00a870;
+    --ok-soft:#e6f7f0;
+    --warn:#d9822b;
+    --warn-soft:#fff4e6;
+    --danger:#d54941;
+    --danger-soft:#fdecea;
+    --code-bg:#f7f8fa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:920px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+  .sheet{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:44px 52px 56px;
+    box-shadow:0 2px 16px rgba(31,35,41,.05);
+  }
+
+  /* ---------- 封面 ---------- */
+  .cover{border-bottom:2px solid var(--ink);padding-bottom:22px;margin-bottom:8px;}
+  .cover .kicker{font-size:12px;letter-spacing:.18em;color:var(--brand);font-weight:700;text-transform:uppercase;}
+  h1{font-size:30px;line-height:1.35;margin:10px 0 6px;letter-spacing:-.3px;}
+  .cover .sub{color:var(--ink-2);font-size:15px;margin:0;}
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:20px 0 6px;}
+  .meta div{background:#fafbfc;padding:10px 14px;}
+  .meta b{display:block;font-size:11px;color:var(--ink-3);font-weight:500;letter-spacing:.05em;margin-bottom:2px;}
+  .meta span{font-size:13px;color:var(--ink);}
+
+  /* ---------- 目录 ---------- */
+  .toc{margin:26px 0 34px;padding:18px 22px;background:#fafbfc;border:1px solid var(--line);border-radius:10px;}
+  .toc h2{font-size:13px;margin:0 0 10px;color:var(--ink-3);letter-spacing:.1em;}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:32px;font-size:13.5px;}
+  .toc li{margin:3px 0;break-inside:avoid;}
+  .toc a{color:var(--ink-2);text-decoration:none;border-bottom:1px dotted transparent;}
+  .toc a:hover{color:var(--brand);border-bottom-color:var(--brand);}
+
+  /* ---------- 标题 ---------- */
+  h2.sec{
+    font-size:20px;margin:46px 0 14px;padding-left:12px;
+    border-left:4px solid var(--brand);line-height:1.4;
+  }
+  h2.sec small{display:block;font-size:12px;color:var(--ink-3);font-weight:400;letter-spacing:.06em;margin-top:2px;}
+  h3{font-size:15.5px;margin:24px 0 8px;}
+  p{margin:10px 0;}
+  strong{font-weight:600;}
+  a{color:var(--brand);}
+
+  /* ---------- 编号步骤 ---------- */
+  .steps{counter-reset:s;list-style:none;padding:0;margin:16px 0;}
+  .steps>li{position:relative;padding-left:38px;margin:14px 0;}
+  .steps>li::before{
+    counter-increment:s;content:counter(s);
+    position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:50%;
+    background:var(--brand);color:#fff;
+    font-size:12.5px;font-weight:700;line-height:24px;text-align:center;
+  }
+  .steps ul{margin:6px 0;padding-left:18px;color:var(--ink-2);}
+  .steps ul li{margin:3px 0;}
+
+  /* ---------- 代码 ---------- */
+  .code{position:relative;margin:12px 0;}
+  .code pre{
+    margin:0;background:var(--code-bg);border:1px solid var(--line);
+    border-radius:8px;padding:14px 16px;overflow-x:auto;
+    font-family:"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+    font-size:12.8px;line-height:1.7;color:#24292f;
+  }
+  .code .copy{
+    position:absolute;top:8px;right:8px;
+    border:1px solid var(--line);background:#fff;color:var(--ink-3);
+    font-size:11.5px;padding:3px 9px;border-radius:5px;cursor:pointer;
+    font-family:inherit;
+  }
+  .code .copy:hover{color:var(--brand);border-color:var(--brand);}
+  .code .copy.done{color:var(--ok);border-color:var(--ok);}
+  code.inl{background:#f2f3f5;border-radius:4px;padding:1px 5px;font-size:13px;font-family:Consolas,monospace;}
+
+  /* ---------- 提示框 ---------- */
+  .box{border-radius:8px;padding:12px 16px;margin:16px 0;font-size:14px;border:1px solid transparent;}
+  .box b.tag{display:inline-block;font-size:11px;letter-spacing:.08em;margin-right:8px;padding:1px 6px;border-radius:4px;}
+  .box.tip{background:var(--brand-soft);border-color:#c9e0ff;}
+  .box.tip b.tag{background:var(--brand);color:#fff;}
+  .box.warn{background:var(--warn-soft);border-color:#ffd8a8;}
+  .box.warn b.tag{background:var(--warn);color:#fff;}
+  .box.danger{background:var(--danger-soft);border-color:#ffc9c4;}
+  .box.danger b.tag{background:var(--danger);color:#fff;}
+  .box.ok{background:var(--ok-soft);border-color:#b7ebd4;}
+  .box.ok b.tag{background:var(--ok);color:#fff;}
+  .box p{margin:4px 0;}
+
+  /* ---------- 表格 ---------- */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;}
+  th{background:#f7f8fa;font-weight:600;color:var(--ink-2);font-size:12.5px;letter-spacing:.02em;}
+  tbody tr:nth-child(even){background:#fcfcfd;}
+  td code{font-family:Consolas,monospace;font-size:12.5px;background:#f2f3f5;padding:0 4px;border-radius:3px;}
+  .t-warn{color:var(--warn);font-weight:600;}
+  .t-danger{color:var(--danger);font-weight:600;}
+  .t-ok{color:var(--ok);font-weight:600;}
+
+  /* ---------- 流程图 ---------- */
+  .flow{display:flex;align-items:stretch;gap:0;margin:20px 0;flex-wrap:wrap;}
+  .flow .node{
+    flex:1 1 0;min-width:120px;background:#fafbfc;border:1px solid var(--line);
+    border-radius:8px;padding:12px 10px;text-align:center;font-size:12.5px;line-height:1.6;
+  }
+  .flow .node b{display:block;font-size:13px;color:var(--ink);margin-bottom:3px;}
+  .flow .node span{color:var(--ink-3);font-size:11.5px;}
+  .flow .arrow{display:flex;align-items:center;color:var(--ink-3);padding:0 6px;font-size:16px;}
+  .flow .node.hl{border-color:var(--brand);background:var(--brand-soft);}
+  .flow .node.hl b{color:var(--brand);}
+
+  /* ---------- 密钥对照卡 ---------- */
+  .keys{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+  .key{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fafbfc;font-size:13px;}
+  .key b{display:block;font-size:13.5px;margin-bottom:4px;}
+  .key span{color:var(--ink-2);}
+  .key .where{display:block;margin-top:6px;font-size:11.5px;color:var(--ink-3);}
+
+  .footer{margin-top:48px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;display:flex;justify-content:space-between;}
+
+  /* ---------- 打印 ---------- */
+  @media print{
+    @page{size:A4;margin:16mm 14mm;}
+    body{background:#fff;font-size:11.5pt;line-height:1.65;}
+    .page{max-width:none;padding:0;}
+    .sheet{border:0;box-shadow:none;border-radius:0;padding:0;}
+    .copy{display:none!important;}
+    .code pre{background:#f7f8fa!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .box,th,.flow .node,.meta div,.toc{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    h2.sec{page-break-after:avoid;}
+    table,.code,.box,.flow{page-break-inside:avoid;}
+    .toc{page-break-after:always;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="sheet">
+
+  <div class="cover">
+    <div class="kicker">Alipay Sandbox · 电脑网站支付</div>
+    <h1>支付宝沙箱支付接入教程</h1>
+    <p class="sub">钟山镇扶贫助农系统 · 订单模块从「模拟支付」升级为真实跳转收银台 + 验签落库</p>
+  </div>
+
+  <div class="meta">
+    <div><b>适用模块</b><span>订单支付</span></div>
+    <div><b>接口前缀</b><span>/api/v1/pay/alipay</span></div>
+    <div><b>沙箱网关</b><span>openapi-sandbox</span></div>
+    <div><b>预计耗时</b><span>30 ~ 40 分钟</span></div>
+  </div>
+
+  <div class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">做成了什么（改动概览）</a></li>
+      <li><a href="#s2">三个密钥，先分清</a></li>
+      <li><a href="#s3">拿到 APPID 与密钥</a></li>
+      <li><a href="#s4">拿沙箱买家账号</a></li>
+      <li><a href="#s5">写配置（两种方式）</a></li>
+      <li><a href="#s6">确认数据库字段</a></li>
+      <li><a href="#s7">启动并自检</a></li>
+      <li><a href="#s8">走一遍完整支付</a></li>
+      <li><a href="#s9">验收清单</a></li>
+      <li><a href="#s10">常见报错对照表</a></li>
+      <li><a href="#s11">答辩可讲的技术点</a></li>
+      <li><a href="#s12">接口与代码位置</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ 1 ============ -->
+  <h2 class="sec" id="s1">一、做成了什么<small>先看结果，再看步骤</small></h2>
+
+  <p>订单模块原来的支付是<strong>「模拟支付」</strong>：点一下直接把 <code class="inl">pay_status</code> 改成 1，<code class="inl">pay_type</code> 只是记个数字，没有任何真实支付链路。现在补上了<strong>支付宝电脑网站支付（沙箱环境）</strong>：浏览器会真正跳到支付宝收银台，用沙箱虚拟买家账号付款，回来向后端主动查单、验签、落库。</p>
+
+  <table>
+    <thead><tr><th style="width:26%">能力</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>跳转收银台</td><td>后端拼参数 + 应用私钥签名，返回完整 GET 地址，前端整页跳转</td></tr>
+      <tr><td>同步回跳</td><td>付款后支付宝 302 把浏览器带回 <code>http://localhost:3100/#/pay/result</code></td></tr>
+      <tr><td>主动查单</td><td>结果页读 <code>out_trade_no</code>，调 <code>/query</code> 回查交易状态，验签通过才落库</td></tr>
+      <tr><td>异步通知</td><td><code>/notify</code> 验签 + 校验金额，部署到公网后自动接管</td></tr>
+      <tr><td>支付方式展示</td><td><code>pay_type=2</code> 显示「支付宝（沙箱）」，订单详情多一行<strong>支付宝交易号</strong></td></tr>
+      <tr><td>开关保护</td><td>没配密钥时自动隐藏入口，只走模拟支付，<strong>不影响其它模块演示</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>支付链路（为什么本机没有公网也能跑通）</h3>
+
+  <div class="flow">
+    <div class="node"><b>① 订单页</b><span>点「去支付」<br>选支付宝沙箱</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>② 后端签名</b><span>/page 返回<br>收银台地址</span></div>
+    <div class="arrow">→</div>
+    <div class="node hl"><b>③ 支付宝收银台</b><span>沙箱买家账号<br>输入支付密码</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>④ 跳回结果页</b><span>带 out_trade_no<br>#/pay/result</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>⑤ 主动查单</b><span>/query 验签<br>落库为已支付</span></div>
+  </div>
+
+  <div class="box tip">
+    <b class="tag">原理</b>
+    <p>支付宝的 <code class="inl">notify_url</code> 是<strong>服务器之间的调用</strong>，必须是公网可达地址，本机 <code class="inl">localhost</code> 收不到。所以主链路设计成「同步跳回 + 主动查单」：<code class="inl">return_url</code> 由浏览器发起，localhost 完全没问题。部署到公网后把 <code class="inl">notify-url</code> 换成真实域名，异步通知会自动接管，<code class="inl">/query</code> 仍可作为兜底。</p>
+  </div>
+
+  <!-- ============ 2 ============ -->
+  <h2 class="sec" id="s2">二、三个密钥，先分清<small>这一节看懂，后面 90% 的报错都能自己排</small></h2>
+
+  <p>支付宝接口全是「你用私钥签名，支付宝用公钥验签；支付宝用它的私钥签名，你用它的公钥验签」。所以本地需要<strong>三个</strong>东西：</p>
+
+  <div class="keys">
+    <div class="key">
+      <b>① APPID</b>
+      <span>沙箱应用身份证，形如 <code>9021000xxxxxxxxx</code>。</span>
+      <span class="where">来源：开放平台沙箱页面直接复制</span>
+    </div>
+    <div class="key">
+      <b>② 应用私钥</b>
+      <span>你在<strong>本地</strong>生成，只留在自己电脑上，用于后端签名。</span>
+      <span class="where">来源：密钥工具生成后导出，绝不上传、不外发</span>
+    </div>
+    <div class="key">
+      <b>③ 支付宝公钥</b>
+      <span>支付宝那边生成，后端用它验证支付宝返回的响应和通知。</span>
+      <span class="where">来源：沙箱页面「接口加签方式」保存后显示</span>
+    </div>
+    <div class="key">
+      <b>④（中间产物）应用公钥</b>
+      <span>由应用私钥导出，粘到沙箱页面保存，让支付宝能验你的签名。</span>
+      <span class="where">它<strong>不</strong>填进项目配置</span>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <b class="tag">最容易搞错</b>
+    <p>配置里的 <code class="inl">alipay-public-key</code> 要填<strong>支付宝公钥</strong>，不是应用公钥。填错的表现是：能跳收银台、也能付款，但回来查单报「响应验签失败」—— 因为收银台跳转只用你的私钥签名（支付宝验你），而查单是验支付宝的签名（你验支付宝），两件事用的是不同密钥。</p>
+  </div>
+
+  <!-- ============ 3 ============ -->
+  <h2 class="sec" id="s3">三、拿到 APPID 与密钥<small>开放平台 → 沙箱 → 自定义密钥</small></h2>
+
+  <ol class="steps">
+    <li><strong>登录开放平台</strong>：打开 <a href="https://open.alipay.com" target="_blank" rel="noopener">open.alipay.com</a>，用支付宝账号登录（个人账号即可，沙箱不需要企业资质）。</li>
+    <li><strong>进沙箱应用页</strong>：右上角「控制台」→ 左侧「沙箱」；部分账号在「开发工具 → 沙箱」。页面顶部就能看到 <strong>APPID</strong>，复制下来，这是参数 ①。
+      <div class="box tip"><b class="tag">提示</b><p>沙箱和正式环境是两套完全独立的 APPID / 密钥 / 买家账号，不要混用。用正式 APPID 连沙箱网关会报「无效的AppID参数」。</p></div>
+    </li>
+    <li><strong>设置加签方式</strong>：同一页找到「开发信息 → 接口加签方式」，选 <strong>自定义密钥</strong>（若已设置则点「查看/修改」）。加密方式选 <strong>RSA2</strong>，密钥长度 <strong>2048</strong>。</li>
+    <li><strong>用密钥工具生成</strong>：页面会给出「支付宝开放平台密钥工具」的下载入口（也可在开放平台文档中心搜「密钥工具」，Windows / macOS 都有）。
+      <ul>
+        <li>打开工具 → 密钥格式 <strong>PKCS#8（JAVA 适用）</strong> → 密钥长度 2048 → 生成密钥</li>
+        <li>复制 <strong>应用私钥</strong>，先存到一个本地文本文件（后面要贴进配置）</li>
+        <li>复制 <strong>应用公钥</strong>，粘贴回沙箱页面 → 保存</li>
+      </ul>
+    </li>
+    <li><strong>复制支付宝公钥</strong>：保存成功后，同一块区域会显示 <strong>支付宝公钥</strong>（注意不是上面那个应用公钥），复制下来，这是参数 ③。</li>
+  </ol>
+
+  <div class="box danger">
+    <b class="tag">格式坑</b>
+    <p>密钥工具里如果选了 <strong>PKCS#1（非 JAVA 适用）</strong>，导出的私钥后端解析会失败，报「私钥格式错误 / InvalidKeySpec」。一定选 <strong>PKCS#8</strong>。本项目两种写法都支持：带 <code class="inl">-----BEGIN PRIVATE KEY-----</code> 头尾的多行 PEM，或去掉头尾的单行 Base64。</p>
+  </div>
+
+  <!-- ============ 4 ============ -->
+  <h2 class="sec" id="s4">四、拿沙箱买家账号<small>演示付款时用它登录收银台</small></h2>
+
+  <p>沙箱页面下方有「沙箱账号」区域，分为<strong>买家</strong>和<strong>商家</strong>。买家账号一般长这样：</p>
+
+  <table>
+    <thead><tr><th style="width:24%">项</th><th>示例</th><th style="width:32%">用途</th></tr></thead>
+    <tbody>
+      <tr><td>买家账号</td><td><code>rqfbtj9407@sandbox.com</code></td><td>收银台登录用</td></tr>
+      <tr><td>登录密码</td><td><code>111111</code></td><td>登录收银台</td></tr>
+      <tr><td>支付密码</td><td><code>111111</code></td><td>确认付款时输入</td></tr>
+      <tr><td>账户余额</td><td>页面可「充值」虚拟金额</td><td>余额不足时先充值</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box ok"><b class="tag">放心</b><p>沙箱里的一切都是虚拟账目，付款不会产生任何真实扣款，也不需要绑真实银行卡。</p></div>
+
+  <!-- ============ 5 ============ -->
+  <h2 class="sec" id="s5">五、写配置<small>改 application.yml 或注入环境变量</small></h2>
+
+  <h3>方式 A：直接改 application.yml（最直观，适合答辩固定环境）</h3>
+  <p>打开 <code class="inl">backend/src/main/resources/application.yml</code>，找到文件末尾的 <code class="inl">alipay:</code> 段：</p>
+
+  <div class="code"><button class="copy">复制</button><pre>alipay:
+  enabled: true                                    # ← 关键开关，默认 false
+  sandbox: true
+  gateway: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+  app-id: 9021000xxxxxxxxx                         # 参数 ①
+  private-key: "MIIEvQIBADANBgkq...你的应用私钥"     # 参数 ②，单行 Base64
+  alipay-public-key: "MIIBIjANBgkqhkiG...支付宝公钥" # 参数 ③，注意不是应用公钥
+  notify-url: http://localhost:8080/api/v1/pay/alipay/notify
+  return-url: http://localhost:3100/#/pay/result
+  subject-prefix: 钟山镇扶贫助农-</pre></div>
+
+  <h3>方式 B：环境变量（不把密钥写进代码，答辩前临时注入）</h3>
+  <p>Spring Boot 的环境变量优先级高于 yml，改完不用动文件、重启即生效。PowerShell 里：</p>
+
+  <div class="code"><button class="copy">复制</button><pre>$env:JAVA_HOME   = "D:\Program Files\Java\jdk-21.0.13.1"
+$env:ALIPAY_ENABLED     = "true"
+$env:ALIPAY_APP_ID      = "9021000xxxxxxxxx"
+$env:ALIPAY_PRIVATE_KEY = "MIIEvQIBADANBgkq..."
+$env:ALIPAY_PUBLIC_KEY  = "MIIBIjANBgkqhkiG..."
+$env:ALIPAY_RETURN_URL  = "http://localhost:3100/#/pay/result"
+
+&amp; "D:\Program Files\Apache\maven\bin\mvn.cmd" -o "-Dmaven.repo.local=D:\dev\m2repo" spring-boot:run</pre></div>
+
+  <div class="box warn">
+    <b class="tag">注意</b>
+    <p>密钥是 Base64，含 <code class="inl">+</code> <code class="inl">/</code> <code class="inl">=</code>，写进 YAML 时<strong>整行加引号</strong>，否则 <code class="inl">:</code> 和特殊字符会导致解析异常。用环境变量就不存在这个问题。</p>
+    <p>两个 URL 别写反：<code class="inl">return-url</code> 是<strong>前端页面</strong>（3100，带 <code class="inl">#/pay/result</code>），<code class="inl">notify-url</code> 是<strong>后端接口</strong>（8080）。</p>
+  </div>
+
+  <!-- ============ 6 ============ -->
+  <h2 class="sec" id="s6">六、确认数据库字段<small>orders.trade_no</small></h2>
+
+  <p>支付成功后要把支付宝交易号落库，<code class="inl">orders</code> 表需要一个 <code class="inl">trade_no</code> 字段。已经加过的库跳过这步，没加过的执行：</p>
+
+  <div class="code"><button class="copy">复制</button><pre>ALTER TABLE orders
+  ADD COLUMN trade_no VARCHAR(64) NULL COMMENT '支付宝交易号（模拟支付为空）'
+  AFTER pay_time;
+
+-- 确认
+SHOW COLUMNS FROM orders LIKE 'trade_no';</pre></div>
+
+  <p>MySQL 客户端（本项目本机路径）：</p>
+  <div class="code"><button class="copy">复制</button><pre>"D:\Program Files\MySQL\mysql-8.0.28-winx64\bin\mysql.exe" -uroot -p123456 nougyou</pre></div>
+
+  <!-- ============ 7 ============ -->
+  <h2 class="sec" id="s7">七、启动并自检<small>先确认后端认到了密钥</small></h2>
+
+  <ol class="steps">
+    <li>按原来的方式启动后端（8080）。启动日志里搜 <code class="inl">Tomcat started</code> 确认起来了。</li>
+    <li>调自检接口 —— <strong>这个接口不需要登录</strong>，专门用来确认配置是否配对：</li>
+  </ol>
+
+  <div class="code"><button class="copy">复制</button><pre>curl http://localhost:8080/api/v1/pay/alipay/config</pre></div>
+
+  <p>配好了应该长这样：</p>
+  <div class="code"><button class="copy">复制</button><pre>{
+  "code": 200,
+  "data": {
+    "enabled": true,
+    "ready": true,
+    "sandbox": true,
+    "gateway": "https://openapi-sandbox.dl.alipaydev.com/gateway.do",
+    "returnUrl": "http://localhost:3100/#/pay/result",
+    "missing": ""
+  }
+}</pre></div>
+
+  <p>没配好时 <code class="inl">ready</code> 为 <code class="inl">false</code>，<code class="inl">missing</code> 会直接告诉缺哪几项，例如 <code class="inl">app-id alipay-public-key</code>，不用去翻日志。</p>
+
+  <div class="box tip"><b class="tag">前端逻辑</b><p>门户点「去支付」时会先调一次这个接口（结果在内存里缓存）：<code>ready=true</code> 才弹出「支付宝沙箱 / 模拟支付」二选一；<code>ready=false</code> 直接走模拟支付，并在弹窗里用小字提示缺哪几项。所以<strong>没配密钥也不会把演示卡住</strong>。</p></div>
+
+  <!-- ============ 8 ============ -->
+  <h2 class="sec" id="s8">八、走一遍完整支付<small>从加购物车到订单详情</small></h2>
+
+  <ol class="steps">
+    <li><strong>买家登录门户</strong>：<code class="inl">http://localhost:3100</code>，用 <code class="inl">buyer01 / 123456</code>。</li>
+    <li><strong>下单</strong>：加购物车 → 结算 → 支付方式选「支付宝（沙箱）」→ 提交订单（此时订单是<strong>待付款</strong>）。</li>
+    <li><strong>发起支付</strong>：订单列表点「去支付」→ 弹窗里点 <strong>「支付宝沙箱」</strong>按钮（点「模拟支付」则走旧逻辑，方便随时对照演示）。</li>
+    <li><strong>收银台付款</strong>：浏览器整页跳到支付宝沙箱收银台 → 用<strong>沙箱买家账号</strong>登录 → 输入<strong>支付密码</strong> → 确认付款。
+      <div class="box warn"><b class="tag">别慌</b><p>收银台上显示的是「沙箱环境」字样，商品标题是 <code class="inl">钟山镇扶贫助农-订单号</code>，金额是订单实付金额。</p></div>
+    </li>
+    <li><strong>自动跳回</strong>：付款成功后支付宝把浏览器带回 <code class="inl">http://localhost:3100/#/pay/result?out_trade_no=...</code>，页面显示「正在确认支付结果…」。</li>
+    <li><strong>结果页判定</strong>：
+      <ul>
+        <li>查到 <code class="inl">TRADE_SUCCESS</code> → 显示<strong>「支付成功」</strong>，订单置为<strong>待发货</strong>，交易号落库</li>
+        <li>还没付 / 支付宝侧有 1~3 秒延迟 → 显示「尚未完成支付」，可点「重新查询」（会连查 3 次，间隔 2 秒）</li>
+        <li>验签失败 → 显示「查询支付结果失败」并给出原因</li>
+      </ul>
+    </li>
+    <li><strong>回订单详情核对</strong>：支付方式显示 <strong>支付宝（沙箱）</strong>，多出一行 <strong>支付宝交易号</strong>，状态待发货。</li>
+    <li><strong>商家侧联动</strong>：换 <code class="inl">farmer01</code> 登录，订单出现在待发货列表，可执行发货 —— 说明支付链路和后续流程是通的。</li>
+  </ol>
+
+  <div class="box ok"><b class="tag">实测记录</b><p>本项目实测：自签密钥下待签名串的排序与剔除规则正确；用支付宝公钥验签收银台回跳 URL 通过、篡改 1 个参数即失败；模拟支付宝私钥推送 notify 返回 <code>success</code>，<code>pay_type=2</code>、<code>trade_no</code> 正确落库；重复通知只生效一次（幂等）；金额 0.01 与订单 152.00 不符时返回 <code>failure</code>。</p></div>
+
+  <!-- ============ 9 ============ -->
+  <h2 class="sec" id="s9">九、验收清单<small>逐条打勾，答辩前过一遍</small></h2>
+
+  <table>
+    <thead><tr><th style="width:6%">#</th><th style="width:34%">检查项</th><th>预期结果</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>GET /pay/alipay/config</code></td><td><code>ready:true</code>、<code>missing:""</code></td></tr>
+      <tr><td>2</td><td>未配置密钥时的订单页</td><td>不出现支付宝选项，只走模拟支付，其它功能正常</td></tr>
+      <tr><td>3</td><td>点「去支付」弹窗</td><td>两个按钮：确认=支付宝沙箱，取消=模拟支付；右上角关闭=不操作</td></tr>
+      <tr><td>4</td><td>收银台页面</td><td>显示沙箱环境、订单标题、金额正确</td></tr>
+      <tr><td>5</td><td>付款后回跳</td><td>落到 <code>#/pay/result</code>，显示「支付成功」</td></tr>
+      <tr><td>6</td><td>订单状态</td><td>待付款 → 待发货，<code>pay_type=2</code></td></tr>
+      <tr><td>7</td><td>交易号</td><td>订单详情显示「支付宝交易号」，与收银台交易号一致</td></tr>
+      <tr><td>8</td><td>重复查单</td><td>多次调用 <code>/query</code> 不重复改单、不报错</td></tr>
+      <tr><td>9</td><td>越权校验</td><td>用别人订单号调 <code>/page</code>、<code>/query</code> 返回无权</td></tr>
+      <tr><td>10</td><td>金额校验</td><td>notify 金额与应付不一致返回 <code>failure</code></td></tr>
+      <tr><td>11</td><td>未付款</td><td>收银台不付款直接关掉，回订单列表仍是待付款，可再次发起</td></tr>
+      <tr><td>12</td><td>超时</td><td>30 分钟未付，收银台提示交易已关闭，需取消重下</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============ 10 ============ -->
+  <h2 class="sec" id="s10">十、常见报错对照表<small>按现象查原因</small></h2>
+
+  <table>
+    <thead><tr><th style="width:30%">现象</th><th style="width:30%">原因</th><th>处理</th></tr></thead>
+    <tbody>
+      <tr><td><code>ready:false</code></td><td><code>enabled</code> 没开，或三个参数有空值</td><td>看 <code>/config</code> 返回的 <code>missing</code>，缺什么补什么</td></tr>
+      <tr><td>收银台报<strong>「无效的AppID参数」</strong></td><td>APPID 填错 / 用了正式环境 APPID / 网关不是沙箱域名</td><td>回沙箱页面重新复制，确认 <code>gateway</code> 是 <code>openapi-sandbox.dl.alipaydev.com</code></td></tr>
+      <tr><td>查单报<strong>「响应验签失败」</strong></td><td>把<strong>应用公钥</strong>填成了支付宝公钥</td><td>换成沙箱页面的「支付宝公钥」</td></tr>
+      <tr><td>收银台报<strong>「验签失败 / 签名不正确」</strong></td><td>应用公钥没粘到沙箱页面，或私钥与上传的公钥不配对</td><td>重新导出应用公钥并保存；密钥对要同一次生成</td></tr>
+      <tr><td>付完回来仍显示<strong>「尚未完成支付」</strong></td><td>支付宝侧有 1~3 秒延迟，查单查早了</td><td>点「重新查询」（自动连查 3 次）</td></tr>
+      <tr><td>回跳后订单号读不到 / 结果页空白</td><td><code>return-url</code> 配错，或前端改了路由</td><td>必须是 <code>http://localhost:3100/#/pay/result</code>；参数在 <code>#</code> 之前，页面读 <code>location.search</code></td></tr>
+      <tr><td>notify 一直返回 <code>failure</code></td><td><code>total_amount</code> 与订单应付金额不一致</td><td>检查订单金额是否被改动；看后端日志的金额比对</td></tr>
+      <tr><td>收银台提示<strong>「交易已关闭」</strong></td><td>超过 30 分钟未付款（<code>timeout_express=30m</code>）</td><td>回订单列表取消该单重新下单</td></tr>
+      <tr><td>启动报<strong>私钥解析失败</strong></td><td>用了 PKCS#1 格式</td><td>用密钥工具重新导出 PKCS#8（JAVA 适用）</td></tr>
+      <tr><td>YAML 启动报解析错误</td><td>密钥含 <code>:</code> 等字符没加引号</td><td>整行加双引号，或改用环境变量</td></tr>
+      <tr><td>点支付没反应且无报错</td><td><code>ready</code> 缓存了旧结果</td><td>刷新页面（配置改了必须重启后端 + 刷新前端）</td></tr>
+    </tbody>
+  </table>
+
+  <p>排查时把日志级别调到 debug 能看到支付宝响应原文（<code class="inl">application.yml</code> 的 <code class="inl">logging.level.com.nougyou</code>），日志里搜「支付宝」能看到下单、查单、通知的完整记录。</p>
+
+  <!-- ============ 11 ============ -->
+  <h2 class="sec" id="s11">十一、答辩可讲的技术点<small>这段可以直接说</small></h2>
+
+  <p><strong>1）没有引入官方 SDK。</strong>官方 <code class="inl">alipay-sdk-java</code> 是个约 40MB 的胖 jar，还带 fastjson、bcprov、dom4j、okhttp 一堆传递依赖；本项目用的是离线 Maven 仓库，装它成本很高。支付宝接口本质就是「拼参数 + RSA2 签名 + HTTP 表单」，所以直接用 JDK 自带的 <code class="inl">SHA256withRSA</code> 和 <code class="inl">HttpClient</code> 实现，代码全在 <code class="inl">com.nougyou.payment</code>，一共 6 个类，看得见、改得动。</p>
+
+  <p><strong>2）签名串规则。</strong>待签名内容 = 除 <code class="inl">sign</code>、<code class="inl">sign_type</code> 之外的所有<strong>非空</strong>参数，按参数名 <strong>ASCII 升序</strong> 拼成 <code class="inl">k=v&amp;k=v</code>（值不做 URL 编码），再 <code class="inl">SHA256withRSA</code> 签名后 Base64。少一个参数、多一个空值、顺序错一个，都会导致验签失败 —— 这是支付宝接入最典型的坑。</p>
+
+  <p><strong>3）验签必须用原文。</strong><code class="inl">alipay.trade.query</code> 的响应是 <code class="inl">{"alipay_trade_query_response":{...},"sign":"..."}</code>，验签对象是 response 节点的<strong>原始 JSON 文本</strong>。如果先反序列化成对象再序列化回去，字段顺序一变签名就对不上，所以代码里按大括号配对（跳过字符串内的括号）原样截取那一段再验签。</p>
+
+  <p><strong>4）先判业务码，再验签。</strong>APPID 填错时支付宝返回的是错误报文、未必带签名。如果先验签，就会把「app_id 不合法」误报成「公钥配错」，排查方向直接跑偏。所以先看 <code class="inl">code != 10000</code> 直接把 <code class="inl">sub_msg</code> 抛给前端，验签放在后面。</p>
+
+  <p><strong>5）幂等与安全。</strong><code>markPaidByAlipay</code> 用的是带 <code class="inl">pay_status=0</code> 条件的 UPDATE，重复通知、重复查单只会生效一次；落库前比对 <code class="inl">total_amount</code> 与订单应付金额，不一致直接拒绝；<code class="inl">/page</code> 先校验订单归属，只能给自己的订单生成支付链接。</p>
+
+  <p><strong>6）容错设计。</strong>支付通道做成可插拔的「开关 + 探测」：没配密钥时接口明确报错、前端自动降级到模拟支付，保证答辩现场网络或账号出问题也能完整演示其它模块。</p>
+
+  <!-- ============ 12 ============ -->
+  <h2 class="sec" id="s12">十二、接口与代码位置<small>改代码时按这张表找</small></h2>
+
+  <h3>接口清单</h3>
+  <table>
+    <thead><tr><th style="width:10%">方法</th><th style="width:38%">路径</th><th style="width:16%">鉴权</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>GET</td><td><code>/api/v1/pay/alipay/config</code></td><td>否</td><td>探测是否已配置，返回 <code>ready</code> / <code>missing</code></td></tr>
+      <tr><td>GET</td><td><code>/api/v1/pay/alipay/page?orderId=</code></td><td>买家</td><td>返回已签名的收银台跳转 URL</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/pay/alipay/query?orderNo=</code></td><td>买家/管理员</td><td>主动查单，成功则落库为已支付</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/pay/alipay/notify</code></td><td>否（验签）</td><td>异步通知，返回 <code>success</code> / <code>failure</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>后端文件</h3>
+  <table>
+    <thead><tr><th style="width:52%">文件</th><th>职责</th></tr></thead>
+    <tbody>
+      <tr><td><code>payment/config/AlipayProperties.java</code></td><td>读 <code>alipay.*</code> 配置，<code>isReady()</code> 判断三要素是否齐全</td></tr>
+      <tr><td><code>payment/util/AlipaySigner.java</code></td><td>签名串构造、RSA2 签名 / 验签（兼容 PEM 与单行 Base64）</td></tr>
+      <tr><td><code>payment/service/AlipayService.java</code></td><td>拼参数下单、查单、响应原文截取与验签</td></tr>
+      <tr><td><code>payment/controller/AlipayController.java</code></td><td>四个接口、归属校验、notify 金额校验</td></tr>
+      <tr><td><code>order/service/OrderService.java</code></td><td><code>markPaidByAlipay</code> 幂等改单、<code>requirePayableOrder</code></td></tr>
+      <tr><td><code>config/SecurityConfig.java</code></td><td><code>/notify</code>、<code>/config</code> 放行</td></tr>
+      <tr><td><code>resources/application.yml</code></td><td><code>alipay:</code> 配置段，默认 <code>enabled: false</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>前端文件（portal）</h3>
+  <table>
+    <thead><tr><th style="width:52%">文件</th><th>职责</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/utils/alipay.js</code></td><td>探测配置、支付方式二选一弹窗、跳转收银台、从回跳地址读订单号</td></tr>
+      <tr><td><code>src/views/PayResult.vue</code></td><td>支付结果页，查单 + 轮询 + 失败原因展示</td></tr>
+      <tr><td><code>src/views/Orders.vue</code> / <code>OrderDetail.vue</code></td><td>「去支付」走二选一逻辑</td></tr>
+      <tr><td><code>src/api/order.js</code></td><td><code>getAlipayConfig</code> / <code>getAlipayPayUrl</code> / <code>queryAlipayTrade</code></td></tr>
+      <tr><td><code>src/utils/order.js</code></td><td>支付方式文案：1 微信、2 支付宝（沙箱）、3 模拟支付</td></tr>
+      <tr><td><code>src/router/index.js</code></td><td>新增 <code>/pay/result</code> 路由</td></tr>
+    </tbody>
+  </table>
+
+  <h3>数据字段</h3>
+  <table>
+    <thead><tr><th style="width:26%">字段</th><th style="width:22%">类型</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>orders.trade_no</code></td><td>VARCHAR(64)</td><td>支付宝交易号；模拟支付为空</td></tr>
+      <tr><td><code>orders.pay_type</code></td><td>TINYINT</td><td>1 微信 / 2 支付宝 / 3 模拟</td></tr>
+      <tr><td><code>orders.pay_status</code></td><td>TINYINT</td><td>0 未支付 / 1 已支付 / 2 已退款，幂等靠它做条件更新</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box tip">
+    <b class="tag">一句话总结</b>
+    <p>沙箱接入的全部工作就是三件事：<strong>拿到三个密钥</strong>（APPID、应用私钥、支付宝公钥）→ <strong>填进配置并打开开关</strong> → <strong>确认 /config 返回 ready:true</strong>。剩下的链路（签名、跳转、查单、幂等）代码里已经写好了，照着第八节走一遍就能演示。</p>
+  </div>
+
+  <div class="footer">
+    <span>钟山镇扶贫助农系统 · 订单支付模块</span>
+    <span>配套文档：doc/alipay_sandbox.md</span>
+  </div>
+
+</div>
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('pre').innerText;
+      var done = function () {
+        btn.textContent = '已复制';
+        btn.classList.add('done');
+        setTimeout(function () { btn.textContent = '复制'; btn.classList.remove('done'); }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text, done); });
+      } else {
+        fallback(text, done);
+      }
+    });
+  });
+  function fallback(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+</script>
+</body>
+</html>

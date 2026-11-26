@@ -22,6 +22,8 @@ export const useUserStore = defineStore("user", () => {
     const { accessToken, refreshToken } = await AuthAPI.login(loginRequest);
     rememberMe.value = loginRequest.rememberMe ?? false;
     AuthStorage.setTokens(accessToken, refreshToken, rememberMe.value);
+    // 勾选「记住账号」时只记住用户名，凭证不进 localStorage
+    AuthStorage.setRememberedUsername(loginRequest.username, rememberMe.value);
   }
 
   let refreshPromise: Promise<void> | null = null;

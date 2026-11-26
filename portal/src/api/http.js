@@ -11,7 +11,7 @@ const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token = sessionStorage.getItem(TOKEN_KEY);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -36,9 +36,9 @@ http.interceptors.response.use(
   (error) => {
     const data = error.response?.data;
     if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+      sessionStorage.removeItem(USER_KEY);
       if (!window.location.hash.startsWith("#/login")) {
         window.location.hash = "#/login";
       }

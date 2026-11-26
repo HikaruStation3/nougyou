@@ -87,7 +87,7 @@
             </el-form-item>
 
             <div class="flex-x-between w-full">
-              <el-checkbox v-model="loginFormData.rememberMe">记住我</el-checkbox>
+              <el-checkbox v-model="loginFormData.rememberMe">记住账号</el-checkbox>
             </div>
 
             <el-form-item>
@@ -131,7 +131,7 @@ const codeLoading = ref(false);
 
 const rememberMe = AuthStorage.getRememberMe();
 const loginFormData = ref({
-  username: "admin",
+  username: AuthStorage.getRememberedUsername() || "admin",
   password: "123456",
   captchaId: "",
   captchaCode: "",

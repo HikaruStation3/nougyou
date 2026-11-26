@@ -12,6 +12,7 @@
           <router-link to="/projects" class="nav-link">农家乐项目</router-link>
           <router-link to="/products" class="nav-link">农产品商城</router-link>
           <router-link to="/videos" class="nav-link">助农短视频</router-link>
+          <router-link to="/news" class="nav-link">乡镇资讯</router-link>
           <router-link v-if="isFarmer" to="/merchant/workbench" class="nav-link"
             >商家工作台</router-link
           >
@@ -32,9 +33,12 @@
                 <el-avatar :size="30" class="user-avatar">{{
                   initials
                 }}</el-avatar>
-                <span class="user-name">{{
-                  store.state.user.nickname || store.state.user.username
-                }}</span>
+                <span class="user-copy">
+                  <span class="user-name">{{
+                    store.state.user.nickname || store.state.user.username
+                  }}</span>
+                  <span v-if="shopName" class="user-shop">店铺 · {{ shopName }}</span>
+                </span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -120,6 +124,11 @@ const isFarmer = computed(() =>
   (store.state.user?.roles || []).includes("FARMER"),
 );
 
+/** 商家登录后在头部常驻展示店铺名，避免只看昵称分不清订单归属哪家店 */
+const shopName = computed(() =>
+  isFarmer.value ? store.state.user?.shopName || "" : "",
+);
+
 /**
  * 购物车入口按权限点判断，而不是按角色写死：
  * 角色权限里授予 cart:list 后即可使用；未返回 perms 的旧缓存按角色兜底。
@@ -152,52 +161,49 @@ async function loadCartCount() {
   }
 }
 
+/** 菜单命令到路由的映射，新增入口只需在这里加一行 */
+const COMMAND_ROUTES = {
+  orders: "/orders",
+  cart: "/cart",
+  consult: "/consult",
+  "merchant-workbench": "/merchant/workbench",
+  merchant: "/merchant/projects",
+  "merchant-products": "/merchant/products",
+  "merchant-videos": "/merchant/videos",
+  "merchant-orders": "/merchant/orders",
+  "merchant-entrusts": "/merchant/entrusts",
+  profile: "/profile",
+};
+
+/**
+ * 统一跳转：导航失败（懒加载组件报错、守卫异常）时给出提示，
+ * 不再让 Promise 静默 reject，避免出现"点了没反应"。
+ */
+function go(path) {
+  router.push(path).catch((error) => {
+    console.error("[portal] 导航失败:", path, error);
+    ElMessage.error("页面打开失败，请刷新后重试");
+  });
+}
+
 async function handleCommand(command) {
-  if (command === "orders") {
-    router.push("/orders");
-    return;
-  }
-  if (command === "cart") {
-    if (canUseCart.value) router.push("/cart");
-    return;
-  }
-  if (command === "consult") {
-    router.push("/consult");
-    return;
-  }
-  if (command === "merchant-workbench") {
-    router.push("/merchant/workbench");
-    return;
-  }
-  if (command === "merchant") {
-    router.push("/merchant/projects");
-    return;
-  }
-  if (command === "merchant-products") {
-    router.push("/merchant/products");
-    return;
-  }
-  if (command === "merchant-videos") {
-    router.push("/merchant/videos");
-    return;
-  }
-  if (command === "merchant-orders") {
-    router.push("/merchant/orders");
-    return;
-  }
-  if (command === "merchant-entrusts") {
-    router.push("/merchant/entrusts");
-    return;
-  }
-  if (command === "profile") {
-    router.push("/profile");
-    return;
-  }
   if (command === "logout") {
     store.logout();
     ElMessage.success("已退出登录");
-    router.push("/");
+    go("/");
+    return;
   }
+  if (command === "cart" && !canUseCart.value) {
+    return;
+  }
+  const target = COMMAND_ROUTES[command];
+  if (!target) {
+    // 模板里新增了菜单项却忘了登记路由时，至少给出可见反馈
+    console.warn("[portal] 未处理的菜单命令:", command);
+    ElMessage.warning("该功能暂未开放");
+    return;
+  }
+  go(target);
 }
 
 let stopCartWatch = null;

@@ -2,7 +2,10 @@
   <div class="workbench-page">
     <section class="workbench-hero">
       <div class="hero-copy">
-        <span class="hero-eyebrow">商家工作台</span>
+        <div class="hero-tags">
+          <span class="hero-eyebrow">商家工作台</span>
+          <span v-if="shopName" class="hero-shop">店铺 · {{ shopName }}</span>
+        </div>
         <h1>{{ greeting }}，{{ nickname }}</h1>
         <p>今日成交、待办事项与库存预警都汇总在这里，数据范围仅限本店。</p>
       </div>
@@ -255,6 +258,9 @@ const nickname = computed(
   () => store.state.user?.nickname || store.state.user?.username || "商家",
 );
 
+/** 店铺名（部门名），商家在页面上需要明确自己当前是哪家店 */
+const shopName = computed(() => store.state.user?.shopName || "");
+
 const greeting = computed(() => {
   const hour = new Date().getHours();
   if (hour < 6) return "夜深了";
@@ -321,6 +327,21 @@ onMounted(async () => {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 1.5px;
+}
+
+.hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-shop {
+  padding: 2px 10px;
+  color: #1f7a47;
+  font-size: 12px;
+  background: #e6f4ec;
+  border: 1px solid #c9e5d5;
+  border-radius: 999px;
 }
 
 .hero-copy h1 {

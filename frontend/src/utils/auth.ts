@@ -4,32 +4,27 @@ import { useUserStoreHook } from "@/stores/user";
 import router from "@/router";
 
 // 负责本地凭证与偏好的读写
+//
+// 登录态统一存放在 sessionStorage，保证「一个标签页 = 一个账号」，
+// 便于同时登录多个账号做联调与演示。
+// localStorage 只保留非敏感的偏好项（主题、记住的账号名等）。
 export const AuthStorage = {
   getAccessToken(): string {
-    const isRememberMe = Storage.get<boolean>(STORAGE_KEYS.REMEMBER_ME, false);
-    return isRememberMe
-      ? Storage.get(STORAGE_KEYS.ACCESS_TOKEN, "")
-      : Storage.sessionGet(STORAGE_KEYS.ACCESS_TOKEN, "");
+    return Storage.sessionGet(STORAGE_KEYS.ACCESS_TOKEN, "");
   },
 
   getRefreshToken(): string {
-    const isRememberMe = Storage.get<boolean>(STORAGE_KEYS.REMEMBER_ME, false);
-    return isRememberMe
-      ? Storage.get(STORAGE_KEYS.REFRESH_TOKEN, "")
-      : Storage.sessionGet(STORAGE_KEYS.REFRESH_TOKEN, "");
+    return Storage.sessionGet(STORAGE_KEYS.REFRESH_TOKEN, "");
   },
 
   setTokens(accessToken: string, refreshToken: string, rememberMe: boolean): void {
+    // token 只写 sessionStorage：每个标签页独立，可并行登录多个账号
+    Storage.sessionSet(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    Storage.sessionSet(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    // 清理旧版本可能残留在 localStorage 的全局 token，避免新标签页串号
+    Storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
+    Storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
     Storage.set(STORAGE_KEYS.REMEMBER_ME, rememberMe);
-    if (rememberMe) {
-      Storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-      Storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    } else {
-      Storage.sessionSet(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-      Storage.sessionSet(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-      Storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-      Storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
-    }
   },
 
   clearAuth(): void {
@@ -41,6 +36,19 @@ export const AuthStorage = {
 
   getRememberMe(): boolean {
     return Storage.get<boolean>(STORAGE_KEYS.REMEMBER_ME, false);
+  },
+
+  /** 记住的登录账号（只有用户名，不含凭证） */
+  getRememberedUsername(): string {
+    return Storage.get<string>(STORAGE_KEYS.REMEMBERED_USERNAME, "");
+  },
+
+  setRememberedUsername(username: string, remember: boolean): void {
+    if (remember && username) {
+      Storage.set(STORAGE_KEYS.REMEMBERED_USERNAME, username);
+    } else {
+      Storage.remove(STORAGE_KEYS.REMEMBERED_USERNAME);
+    }
   },
 };
 

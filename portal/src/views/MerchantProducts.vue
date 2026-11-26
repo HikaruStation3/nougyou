@@ -1,7 +1,10 @@
 <template>
   <div class="merchant-page">
     <section class="page-hero">
-      <h1>我的农产品</h1>
+      <h1>
+        我的农产品
+        <span v-if="shopName" class="hero-shop">店铺 · {{ shopName }}</span>
+      </h1>
       <p>
         上架您家出产的农产品，上架后买家即可在商城选购，商品仅归属您的店铺。
       </p>
@@ -432,6 +435,9 @@ const isFarmer = computed(() =>
   (store.state.user?.roles || []).includes("FARMER"),
 );
 
+/** 店铺名，明确商品归属哪家店 */
+const shopName = computed(() => (isFarmer.value ? store.state.user?.shopName || "" : ""));
+
 async function loadCategories() {
   try {
     categories.value = await getCategories({ onlyEnabled: true });
@@ -606,9 +612,22 @@ onMounted(async () => {
 }
 
 .page-hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 8px;
   font-size: 26px;
   color: #1f3d2b;
+}
+
+.hero-shop {
+  padding: 2px 10px;
+  color: #1f7a47;
+  font-size: 12px;
+  font-weight: 400;
+  background: #e6f4ec;
+  border: 1px solid #c9e5d5;
+  border-radius: 999px;
 }
 
 .page-hero p {

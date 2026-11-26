@@ -1,3 +1,4 @@
+import type { AxiosResponse } from "axios";
 import request from "@/utils/request";
 
 const ADMIN_ORDER_BASE_URL = "/api/v1/admin/orders";
@@ -61,6 +62,16 @@ const OrderAPI = {
       url: ADMIN_ORDER_BASE_URL,
       method: "get",
       params: queryParams,
+    });
+  },
+
+  /** API-060 后台订单导出：条件与查询一致，返回 xlsx 文件流 */
+  exportAdminOrders(queryParams: OrderQueryParams) {
+    return request<any, AxiosResponse<Blob>>({
+      url: `${ADMIN_ORDER_BASE_URL}/export`,
+      method: "get",
+      params: queryParams,
+      responseType: "blob",
     });
   },
 

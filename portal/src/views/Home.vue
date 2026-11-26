@@ -86,13 +86,18 @@
           <h2>扶贫政策</h2>
           <p>产业奖补、信贷贴息、公益岗位，把政策讲清楚再落地。</p>
         </div>
-        <span class="section-count">共 {{ home.policies.length }} 条最新政策</span>
+        <div class="section-side">
+          <span class="section-count">共 {{ home.policies.length }} 条最新政策</span>
+          <router-link class="section-more" to="/policies">
+            查看全部<el-icon><ArrowRight /></el-icon>
+          </router-link>
+        </div>
       </header>
 
       <div v-loading="loading" class="policy-layout">
         <el-empty v-if="!loading && !home.policies.length" description="暂无已发布政策" />
         <template v-else-if="home.policies.length">
-          <article class="policy-feature">
+          <article class="policy-feature" @click="openPolicy(featuredPolicy.id)">
             <el-icon class="policy-watermark" :size="180"><Document /></el-icon>
             <div class="policy-feature-top">
               <span class="policy-badge">最新发布</span>
@@ -110,7 +115,12 @@
           </article>
 
           <ul class="policy-list">
-            <li v-for="item in restPolicies" :key="item.id" class="policy-item">
+            <li
+              v-for="item in restPolicies"
+              :key="item.id"
+              class="policy-item"
+              @click="openPolicy(item.id)"
+            >
               <time>{{ formatDay(item.publishTime) }}</time>
               <div class="policy-item-main">
                 <h4>{{ item.title }}</h4>
@@ -132,7 +142,12 @@
           <h2>乡镇资讯</h2>
           <p>景点、线路、历史与人文，先认识钟山，再走进钟山。</p>
         </div>
-        <span class="section-count">{{ home.news.length }} 条资讯</span>
+        <div class="section-side">
+          <span class="section-count">{{ home.news.length }} 条资讯</span>
+          <router-link class="section-more" to="/news">
+            查看全部<el-icon><ArrowRight /></el-icon>
+          </router-link>
+        </div>
       </header>
 
       <div v-loading="loading" class="news-grid">
@@ -142,6 +157,7 @@
           :key="item.id"
           class="news-card"
           :class="`news-type-${item.newsType}`"
+          @click="openNews(item.id)"
         >
           <div class="news-card-top">
             <span class="news-type">{{ item.newsTypeName }}</span>
@@ -338,7 +354,7 @@ const quickEntries = computed(() => [
     title: "扶贫政策",
     desc: "奖补、贴息与公益岗位",
     icon: Document,
-    action: () => document.getElementById("policies")?.scrollIntoView({ behavior: "smooth" }),
+    action: () => router.push("/policies"),
   },
   isFarmer.value
     ? {
@@ -367,6 +383,18 @@ function formatDate(value) {
 
 function formatDay(value) {
   return value ? String(value).slice(5, 10) : "--";
+}
+
+function openPolicy(id) {
+  if (id) {
+    router.push(`/policies/${id}`);
+  }
+}
+
+function openNews(id) {
+  if (id) {
+    router.push(`/news/${id}`);
+  }
 }
 
 async function loadHome() {
@@ -653,6 +681,35 @@ onMounted(loadHome);
   white-space: nowrap;
 }
 
+.section-side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-more {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  color: #2e9e5b;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.section-more:hover {
+  color: #1a6440;
+}
+
+.section-more .el-icon {
+  font-size: 12px;
+  transition: transform 0.16s ease;
+}
+
+.section-more:hover .el-icon {
+  transform: translateX(2px);
+}
+
 /* ---------- 政策 ---------- */
 .policy-layout {
   display: grid;
@@ -675,6 +732,13 @@ onMounted(loadHome);
   background: linear-gradient(150deg, #2e9e5b, #1a6440);
   border-radius: 20px;
   box-shadow: 0 18px 40px rgba(26, 100, 64, 0.22);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.policy-feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 48px rgba(26, 100, 64, 0.3);
 }
 
 .policy-watermark {
@@ -746,8 +810,16 @@ onMounted(loadHome);
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 18px 0;
+  margin: 0 -10px;
+  padding: 18px 10px;
   border-bottom: 1px dashed #e8efea;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.policy-item:hover {
+  background: #f5faf7;
 }
 
 .policy-item:last-child {
@@ -813,6 +885,7 @@ onMounted(loadHome);
   border: 1px solid #e3ebe6;
   border-top: 3px solid #2e9e5b;
   border-radius: 16px;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 

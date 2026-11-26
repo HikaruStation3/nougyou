@@ -1,7 +1,10 @@
 <template>
   <div class="merchant-orders-page">
     <section class="page-hero">
-      <h1>商家订单</h1>
+      <h1>
+        商家订单
+        <span v-if="shopName" class="hero-shop">店铺 · {{ shopName }}</span>
+      </h1>
       <p>查看本店订单并及时发货，发货后买家即可确认收货。</p>
     </section>
 
@@ -139,11 +142,16 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { getFarmerOrders, shipOrder } from "../api/order";
+import { useUserStore } from "../store/user";
 import { money } from "../utils/format";
 import { orderStatusTag, orderStatusText } from "../utils/order";
+
+const store = useUserStore();
+/** 店铺名，和订单头显示的 shopName 对齐，避免商家对不上账 */
+const shopName = computed(() => store.state.user?.shopName || "");
 
 const loading = ref(false);
 const shipping = ref(false);
@@ -232,9 +240,22 @@ onMounted(loadOrders);
 }
 
 .page-hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 8px;
   font-size: 26px;
   color: #1f3d2b;
+}
+
+.hero-shop {
+  padding: 2px 10px;
+  color: #1f7a47;
+  font-size: 12px;
+  font-weight: 400;
+  background: #e6f4ec;
+  border: 1px solid #c9e5d5;
+  border-radius: 999px;
 }
 
 .page-hero p {

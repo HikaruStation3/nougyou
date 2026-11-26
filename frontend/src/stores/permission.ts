@@ -37,6 +37,10 @@ export const usePermissionStore = defineStore("permission", () => {
       routes.value = [...constantRoutes, ...dynamicRoutes];
       isRouteGenerated.value = true;
 
+      // 后端可能新增/调整了权限点（如新增模块），路由生成后同步一次用户信息，
+      // 避免左侧菜单已出现新入口、页面里 v-hasPerm 按钮却还是旧权限快照
+      await useUserStoreHook().getUserInfo();
+
       return dynamicRoutes;
     } catch (error) {
       // 路由生成失败，重置状态

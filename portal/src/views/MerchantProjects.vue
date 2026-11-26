@@ -1,7 +1,10 @@
 <template>
   <div class="merchant-page">
     <section class="page-hero">
-      <h1>我的农家乐项目</h1>
+      <h1>
+        我的农家乐项目
+        <span v-if="shopName" class="hero-shop">店铺 · {{ shopName }}</span>
+      </h1>
       <p>管理您提交的农家乐项目，提交后由管理员审核，通过后即可在前台展示。</p>
     </section>
 
@@ -280,6 +283,9 @@ const rules = {
 
 const isFarmer = computed(() => (store.state.user?.roles || []).includes("FARMER"));
 
+/** 店铺名，让商家清楚自己正在管理哪家店的项目 */
+const shopName = computed(() => (isFarmer.value ? store.state.user?.shopName || "" : ""));
+
 function auditType(status) {
   if (status === 1) return "success";
   if (status === 2) return "danger";
@@ -426,9 +432,22 @@ onMounted(async () => {
 }
 
 .page-hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 8px;
   font-size: 26px;
   color: #1f3d2b;
+}
+
+.hero-shop {
+  padding: 2px 10px;
+  color: #1f7a47;
+  font-size: 12px;
+  font-weight: 400;
+  background: #e6f4ec;
+  border: 1px solid #c9e5d5;
+  border-radius: 999px;
 }
 
 .page-hero p {

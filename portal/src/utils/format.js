@@ -42,6 +42,19 @@ export function formatDuration(seconds) {
 }
 
 /**
+ * 正文分段：政策与资讯正文以纯文本入库，用换行分段。
+ * 返回段落数组，模板里逐段渲染，避免把整段文本塞进一个 <p> 影响阅读。
+ * @param {string|null|undefined} content 正文
+ * @returns {string[]}
+ */
+export function toParagraphs(content) {
+  return String(content || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+/**
  * 相对时间：评论、发布时间展示成「3小时前」这类短文案。
  * @param {string|Date} value 后端返回的 yyyy-MM-dd HH:mm:ss
  * @returns {string}

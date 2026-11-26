@@ -184,3 +184,8 @@ html.dark .el-table--striped .el-table__body tr.el-table__row--striped td {
     background-color: var(--menu-hover) !important;
   }
 }
+
+/* 全局消息提示：下移让出顶部导航栏（$navbar-height = 50px），避免提示条遮挡菜单 */
+.el-message {
+  margin-top: 50px;
+}

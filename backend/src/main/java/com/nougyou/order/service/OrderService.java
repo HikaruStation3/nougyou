@@ -65,6 +65,8 @@ public class OrderService {
     private static final int STATUS_CANCELED = 4;
     private static final int SHELF_ON = 1;
     private static final int MAX_PAGE_SIZE = 100;
+    /** 导出上限，避免一次导出把整库订单拉进内存 */
+    private static final int MAX_EXPORT_ROWS = 10000;
 
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
@@ -261,6 +263,25 @@ public class OrderService {
      * API-060 后台订单查询：全平台数据，支持订单号、买家、商家与时间范围。
      */
     public PageResult<OrderVO> adminPage(OrderPageQuery query) {
+        return pageOf(adminWrapper(query), query);
+    }
+
+    /**
+     * API-060 后台订单导出：与查询共用筛选条件，不分页，最多 {@link #MAX_EXPORT_ROWS} 条。
+     * 管理员对账用途，手机号给明文（与订单详情一致），不脱敏。
+     */
+    public List<OrderVO> adminExport(OrderPageQuery query) {
+        var wrapper = adminWrapper(query);
+        wrapper.orderByDesc(Order::getCreateTime).orderByDesc(Order::getId);
+        wrapper.last("LIMIT " + MAX_EXPORT_ROWS);
+        return assemble(orderMapper.selectList(wrapper), false);
+    }
+
+    /**
+     * 后台订单查询与导出共用的筛选条件。
+     */
+    private com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order> adminWrapper(
+            OrderPageQuery query) {
         var wrapper = Wrappers.<Order>lambdaQuery();
         applyCommonFilters(wrapper, query);
         if (StringUtils.hasText(query.getOrderNo())) {
@@ -275,7 +296,7 @@ public class OrderService {
         if (StringUtils.hasText(query.getKeyword())) {
             wrapper.like(Order::getOrderNo, query.getKeyword().trim());
         }
-        return pageOf(wrapper, query);
+        return wrapper;
     }
 
     private void applyCommonFilters(com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order> wrapper,

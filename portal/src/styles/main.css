@@ -43,6 +43,11 @@ a {
   backdrop-filter: blur(10px);
 }
 
+/* 全局消息提示：下移 64px 让出吸顶导航，避免成功/失败提示盖住菜单 */
+.el-message {
+  margin-top: 64px;
+}
+
 .nav-inner {
   display: flex;
   align-items: center;
@@ -104,6 +109,17 @@ a {
   cursor: pointer;
   color: var(--portal-text);
   font-size: 14px;
+}
+
+.user-copy {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.user-shop {
+  color: var(--portal-muted);
+  font-size: 11px;
 }
 
 .user-avatar {
@@ -240,6 +256,12 @@ a {
 .profile-head h2 {
   margin: 0 0 10px;
   font-size: 24px;
+}
+
+.profile-shop {
+  margin: -4px 0 10px;
+  color: var(--portal-muted);
+  font-size: 13px;
 }
 
 .role-tags {

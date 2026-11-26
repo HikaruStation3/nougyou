@@ -108,7 +108,7 @@ const project = ref(null);
 /** 带上商家 ID 跳到我的咨询，由咨询页自动建会话 */
 function consultFarmer() {
   if (!project.value?.farmerId) return;
-  if (!localStorage.getItem("portal_token")) {
+  if (!sessionStorage.getItem("portal_token")) {
     ElMessage.warning("登录后即可咨询商家");
     router.push({ name: "login", query: { redirect: `/projects/${route.params.id}` } });
     return;

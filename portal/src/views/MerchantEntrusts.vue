@@ -389,9 +389,21 @@ async function handleTerminate(row) {
   await loadList();
 }
 
+/** 行数据缺 id 时直接提示，避免把 undefined 拼进请求路径 */
+function rowId(row) {
+  const id = row?.id;
+  if (!id) {
+    ElMessage.warning("委托信息不完整，请刷新后重试");
+    return null;
+  }
+  return id;
+}
+
 async function openStat(row) {
+  const id = rowId(row);
+  if (!id) return;
   try {
-    stat.value = await getEntrustStat(row.id);
+    stat.value = await getEntrustStat(id);
     statVisible.value = true;
   } catch {
     stat.value = null;
@@ -399,9 +411,15 @@ async function openStat(row) {
 }
 
 async function openSettlements(row) {
-  const data = await getEntrustSettlements(row.id, { pageNum: 1, pageSize: 12 });
-  settlements.value = data?.list || [];
-  settlementVisible.value = true;
+  const id = rowId(row);
+  if (!id) return;
+  try {
+    const data = await getEntrustSettlements(id, { pageNum: 1, pageSize: 12 });
+    settlements.value = data?.list || [];
+    settlementVisible.value = true;
+  } catch {
+    settlements.value = [];
+  }
 }
 
 onMounted(loadList);

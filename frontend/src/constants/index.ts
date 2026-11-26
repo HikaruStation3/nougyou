@@ -30,6 +30,8 @@ export const STORAGE_KEYS = {
   ACCESS_TOKEN: `${APP_PREFIX}:auth:access_token`,
   REFRESH_TOKEN: `${APP_PREFIX}:auth:refresh_token`,
   REMEMBER_ME: `${APP_PREFIX}:auth:remember_me`,
+  /** 记住的登录账号（仅用户名，不含凭证） */
+  REMEMBERED_USERNAME: `${APP_PREFIX}:auth:remembered_username`,
 
   // ===== 系统相关 =====
   DICT_CACHE: `${APP_PREFIX}:system:dict_cache`,

@@ -147,8 +147,15 @@ public class SysUserService {
 
     public UserInfoVO currentUserInfo(Long userId) {
         SysUser user = requireUser(userId);
+        List<String> roles = roleCodes(user);
+        SysDept dept = user.getDeptId() == null ? null : deptMapper.selectById(user.getDeptId());
+        String deptName = dept == null ? null : dept.getName();
+        // 店铺名取商家账号所属部门名；仅农户商家返回，避免买家/管理员看到无意义的“店铺”
+        String shopName = roles.contains("FARMER") ? deptName : null;
         return new UserInfoVO(String.valueOf(user.getId()), user.getUsername(), user.getNickname(),
-                user.getAvatar(), roleCodes(user), permissionService.findPermissionCodes(userId));
+                user.getAvatar(),
+                user.getDeptId() == null ? null : String.valueOf(user.getDeptId()),
+                deptName, shopName, roles, permissionService.findPermissionCodes(userId));
     }
 
     public UserProfileVO getProfile(Long userId) {

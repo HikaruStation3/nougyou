@@ -30,6 +30,9 @@
         <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery">查询</el-button>
           <el-button icon="refresh" @click="handleReset">重置</el-button>
+          <el-button type="success" icon="download" :loading="exporting" @click="handleExport">
+            导出
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -154,6 +157,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
 import OrderAPI, { type OrderQueryParams, type OrderVO } from "@/api/order";
 
 const ORDER_STATUS: Record<number, { text: string; tag: "primary" | "success" | "info" | "warning" | "danger" }> = {
@@ -178,6 +182,7 @@ const PAY_TYPE: Record<number, string> = {
 };
 
 const loading = ref(false);
+const exporting = ref(false);
 const orderList = ref<OrderVO[]>([]);
 const total = ref(0);
 const dateRange = ref<[string, string] | null>(null);
@@ -222,6 +227,52 @@ function handleReset() {
   queryParams.orderStatus = undefined;
   dateRange.value = null;
   loadData();
+}
+
+/** API-060 导出：带上当前筛选条件，后端返回 xlsx 文件流 */
+async function handleExport() {
+  exporting.value = true;
+  try {
+    const response = await OrderAPI.exportAdminOrders({
+      ...queryParams,
+      startTime: dateRange.value?.[0],
+      endTime: dateRange.value?.[1],
+    });
+
+    const contentType = String(response.headers["content-type"] || "");
+    // 出错时后端返回的仍是 JSON，避免把错误信息存成表格文件
+    if (contentType.includes("application/json")) {
+      const text = await (response.data as Blob).text();
+      const result = JSON.parse(text || "{}");
+      ElMessage.error(result.msg || "导出失败");
+      return;
+    }
+
+    const blob = new Blob([response.data as Blob], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `订单列表_${fileStamp(new Date())}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    ElMessage.success("导出完成，已开始下载");
+  } catch {
+    ElMessage.error("导出失败，请稍后重试");
+  } finally {
+    exporting.value = false;
+  }
+}
+
+function fileStamp(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return (
+    `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_` +
+    `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  );
 }
 
 async function openDetail(row: any) {

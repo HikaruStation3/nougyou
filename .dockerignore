@@ -1,0 +1,15 @@
+.git
+.gitignore
+.idea
+.vscode
+.workbuddy
+.minio-data
+.screenshots
+**/node_modules
+**/dist
+**/target
+backend/backend.log*
+backend/uploads
+doc/screenshots
+scripts
+*.md

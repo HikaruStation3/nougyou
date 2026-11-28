@@ -1,4 +1,5 @@
 services:
+  # ==================== MySQL ====================
   mysql:
     image: mysql:8.4
     container_name: nougyou-mysql
@@ -14,26 +15,93 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # 首次启动自动执行：27 张业务表 + 演示数据（账号密码均为 123456）
+      - ./doc/zhongshan_farm_init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p123456"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
 
+  # ==================== MinIO 对象存储 ====================
   minio:
-    image: minio/minio:latest
+    # MinIO 官方镜像（minio/minio、quay.io/minio/minio）已不再公开提供，
+    # 这里使用 Bitnami 归档镜像，接口与行为一致
+    image: bitnamilegacy/minio:latest
     container_name: nougyou-minio
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    # 显式开启控制台端口（Bitnami 镜像默认不监听 9001）
+    command: ["minio", "server", "/bitnami/minio/data", "--address", ":9000", "--console-address", ":9001"]
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      TZ: Asia/Shanghai
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9000:9000"   # API
+      - "9001:9001"   # 控制台
     volumes:
-      - minio-data:/data
+      - minio-data:/bitnami/minio/data
+
+  # ==================== 后端服务 ====================
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: nougyou-backend:latest
+    container_name: nougyou-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      TZ: Asia/Shanghai
+      # 数据库（容器内用服务名访问）
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_DB: nougyou
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "123456"
+      # MinIO：endpoint 走容器网络，public-endpoint 供浏览器访问
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_PUBLIC_ENDPOINT: http://localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: nougyou
+      # 生产环境请通过 .env 或系统环境变量覆盖
+      JWT_SECRET: ${JWT_SECRET:-nougyou-jwt-secret-key-change-me-0123456789abcdef}
+      # AI 客服（智谱 GLM），未配置时使用占位值保证服务能启动（AI 功能调用会失败）
+      GLM_API_KEY: ${GLM_API_KEY:-sk-no-key-configured}
+      GLM_MODEL: ${GLM_MODEL:-glm-4-flash}
+    ports:
+      - "8080:8080"
+
+  # ==================== 管理后台 ====================
+  admin:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: nougyou-admin:latest
+    container_name: nougyou-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+  # ==================== 用户门户 ====================
+  portal:
+    build:
+      context: .
+      dockerfile: portal/Dockerfile
+    image: nougyou-portal:latest
+    container_name: nougyou-portal
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3100:80"
 
 volumes:
   mysql-data:

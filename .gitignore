@@ -6,6 +6,7 @@ backend/target/
 backend/backend.log.*
 .minio-data/
 .idea/
+.vscode/
 *.iml
 
 # Node

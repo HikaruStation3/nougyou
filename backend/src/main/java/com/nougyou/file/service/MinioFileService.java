@@ -182,7 +182,9 @@ public class MinioFileService {
     }
 
     private String publicUrl(String objectName) {
-        String endpoint = properties.getEndpoint();
+        String endpoint = StringUtils.hasText(properties.getPublicEndpoint())
+                ? properties.getPublicEndpoint()
+                : properties.getEndpoint();
         if (endpoint != null && endpoint.endsWith("/")) {
             endpoint = endpoint.substring(0, endpoint.length() - 1);
         }

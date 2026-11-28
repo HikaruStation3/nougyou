@@ -17,6 +17,8 @@ services:
       - mysql-data:/var/lib/mysql
       # 首次启动自动执行：27 张业务表 + 演示数据（账号密码均为 123456）
       - ./doc/zhongshan_farm_init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      # 追加导入实际业务数据（仅在数据卷首次创建时执行）
+      - ./doc/backup_data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p123456"]
       interval: 10s
